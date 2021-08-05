@@ -1,0 +1,1 @@
+export const inRange = (x, lower, upper) => x > lower && x < upper
