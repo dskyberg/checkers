@@ -45,8 +45,8 @@ const BoardCell = (props) => {
             style={{ width: NUM_SQUARES, height: NUM_SQUARES, top: point.y * NUM_SQUARES + borderWidth, left: point.x * NUM_SQUARES + borderWidth }}
             onClick={handleClick}
         >
-            {(state && state.playable && state.player !== Player.EMPTY) &&
-                <Checker player={state.player} isKing={state.isKing} svgStyle={svgStyle}/>
+            {(state && state.playable && state.side !== Player.EMPTY) &&
+                <Checker player={state.side} isKing={state.isKing} svgStyle={svgStyle}/>
             }
         </div>
 

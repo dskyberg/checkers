@@ -1,5 +1,7 @@
 import { action, makeObservable, observable } from "mobx"
 import Board from '../classes/Board'
+import Player from '../classes/Player'
+import {SIDE_NAME} from '../classes/Player'
 
 
 const depths = [-1, 1, 2, 3, 4]
@@ -8,9 +10,12 @@ export default class Settings {
     starting = 1
     round = 1
     openDialog = false
-    banner = 'Round 1'
     selected = undefined
     board = new Board()
+    playerWhite = new Player(Player.WHITE)
+    playerBlack = new Player(Player.BLACK)
+    currentPlayer = this.playerWhite
+    banner = `${SIDE_NAME[this.currentPlayer.side]}'s turn`
 
     constructor() {
         makeObservable(this, {
@@ -28,6 +33,7 @@ export default class Settings {
             setOpenDialog: action,
             setBanner: action,
             setSelected: action,
+            turnOver: action,
         })
     }
 
@@ -57,10 +63,16 @@ export default class Settings {
     }
 
     setBanner(val) {
-        this.gameResult = val
+        this.banner = val
     }
 
     setSelected(point) {
 
+    }
+
+    turnOver() {
+        this.currentPlayer = this.currentPlayer.side === Player.WHITE ? this.playerBlack : this.playerWhite
+        console.log('turning side over to', SIDE_NAME[this.currentPlayer.side])
+        this.setBanner(`${SIDE_NAME[this.currentPlayer.side]}'s turn`)
     }
 }

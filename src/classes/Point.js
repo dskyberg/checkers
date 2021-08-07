@@ -1,4 +1,27 @@
+import {inRange} from '../utils/inRange'
+import { MAX_ROW_COL } from '../constants'
 export default class Point {
+
+    static testPoint(point) {
+        if(point === undefined) {
+            throw new Error('point is not defined')
+        }
+        if (!(point instanceof Point)) {
+            throw new Error('not a Point')
+        }
+        if(!inRange(point.x, -1, MAX_ROW_COL)) {
+            throw new Error(`x is out of bounds: ${point.x}`)
+        }
+        if(!inRange(point.y, -1, MAX_ROW_COL)) {
+            throw new Error(`xyis out of bounds: ${point.y}`)
+        }
+        return true
+    }
+
+    static fromRowCol(row, col) {
+        return new Point(col, row)
+    }
+
     constructor(x, y) {
         this.x = x
         this.y = y
@@ -15,7 +38,8 @@ export default class Point {
         points.forEach(point => {if(this.equals(point)) matched = true})
         return matched
     }
-    static fromRowCol(row, col) {
-        return new Point(col, row)
+
+    toString() {
+        return `{x: ${this.x}, y: ${this.y}}`
     }
 }

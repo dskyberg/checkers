@@ -2,9 +2,10 @@ import React from "react";
 import {observer} from 'mobx-react-lite'
 import {useStore} from '../store'
 import {headerMargin, NUM_SQUARES, MAX_ROW_COL, borderWidth} from '../constants'
+import Point from '../classes/Point'
+import Move from '../classes/Move'
 
 import { makeStyles } from "@material-ui/core/styles";
-import Point from '../classes/Point'
 import BoardCell from './BoardCell'
 
 const useStyles = makeStyles((theme) => ({
@@ -25,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
 const BoardView = observer(() => {
     const classes = useStyles()
     const {settings} = useStore()
-    const {board} = settings
+    const {board, currentPlayer} = settings
     const [selected, setSelected] = React.useState()
 
 
@@ -35,17 +36,33 @@ const BoardView = observer(() => {
 
     const manageSelections = (point) => {
         // Is this the beginning of a move?
-        if(selected === undefined) {
+        if(selected === undefined || selected === null) {
             // Nothing selected yet. Pick a checker
-            if(board.isPlayerChecker(point)) {
+            if(board.isPlayerChecker(currentPlayer, point)) {
                 setSelected([point])
-                return
             }
         }
-        // Is the user changing moves?
-        if(board.isValidMove(selected[0], point)) {
+        else if(point.equals(selected[0])) {
+            // If the starting checker is clicked again, clear the selection
+            setSelected(undefined)
+        }
+        else if(point.equals(selected[selected.length - 1])) {
+            // Commit the move by re-clicking the last selection
+            let lastPoint = null
+            selected.forEach(point => {
+                if(lastPoint === null) {
+                    lastPoint = point
+                    return
+                }
+                const move = new Move(lastPoint, point)
+                board.makeMove(move)
+            })
+            setSelected(undefined)
+            settings.turnOver()
+        }
+        // Is the user adding a jump?
+        else if(board.isValidMove(currentPlayer, selected[0], point)) {
             setSelected([...selected, point])
-            console.log('selected:', selected)
         }
     }
 
