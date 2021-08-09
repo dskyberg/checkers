@@ -42,12 +42,14 @@ const BoardView = observer(() => {
                 setSelected([point])
             }
         }
+
+        // If the starting checker is clicked again, clear the selection
         else if(point.equals(selected[0])) {
-            // If the starting checker is clicked again, clear the selection
             setSelected(undefined)
         }
+
+        // If this is the last selected cell, then commit the move
         else if(point.equals(selected[selected.length - 1])) {
-            // Commit the move by re-clicking the last selection
             let lastPoint = null
             selected.forEach(point => {
                 if(lastPoint === null) {
@@ -55,6 +57,8 @@ const BoardView = observer(() => {
                     return
                 }
                 const move = new Move(lastPoint, point)
+                lastPoint = point
+                console.log('Making move:', move)
                 board.makeMove(move)
             })
             setSelected(undefined)
@@ -62,7 +66,8 @@ const BoardView = observer(() => {
         }
         // Is the user adding a jump?
         else if(board.isValidMove(currentPlayer, selected[0], point)) {
-            setSelected([...selected, point])
+            const newSelected = [...selected, point]
+            setSelected(newSelected)
         }
     }
 

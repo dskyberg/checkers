@@ -9,7 +9,7 @@
  * It's also true that if m xor n is true, then the square is dark.
  */
 import { isEven } from '../utils/isEven'
-import { inRange } from '../utils/inRange'
+import { inRange, arrayEquals } from '../utils'
 import { MAX_ROW_COL } from '../constants'
 import Point from './Point'
 import Cell from './Cell'
@@ -36,11 +36,6 @@ export const adjacentCells = (point) => {
     ].filter(point => isValidCell(point))
 }
 
-export const jumpCell = (startPoint, jumpPoint) => {
-    const x = jumpPoint.x < startPoint.x ? jumpPoint.x - 1 : jumpPoint.x + 1
-    const y = jumpPoint.y < startPoint.y ? jumpPoint.y - 1 : jumpPoint.y + 1
-    return new Point(x, y)
-}
 
 /**
  * Test to see if the direction of the target cell is legit for the starting
@@ -72,6 +67,8 @@ const isDirectionalCell = (cell, startPoint, point) => {
  */
 export default class Board {
     cells = []
+    kings = [0, 0, 0]
+    remaining = [0, 12, 12]
 
     static inRange(point) {
         return inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
@@ -87,7 +84,7 @@ export default class Board {
                 // Each cells is populated correctly, with no checkers
                 this.emptyBoard()
             } else {
-                this.clone(board)
+                this.cloneFrom(board)
             }
         }
 
@@ -95,6 +92,9 @@ export default class Board {
 
     emptyBoard(startingPlayer = Player.WHITE) {
         this.cells = []
+        this.kings = [0, 0, 0]
+        this.remaining = [0, 0, 0]
+
         for (let row = 0; row < MAX_ROW_COL; row++) {
             this.cells.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
@@ -111,6 +111,9 @@ export default class Board {
 
     resetBoard(startingPlayer = Player.WHITE) {
         this.cells = []
+        this.kings = [0, 0, 0]
+        this.remaining = [0, 12, 12]
+
         for (let row = 0; row < MAX_ROW_COL; row++) {
             this.cells.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
@@ -135,6 +138,8 @@ export default class Board {
  * @param {Board, Array} board Either an instance of Board, or an array of cell objects
  */
     cloneFrom(board) {
+        this.kings = board.kings.slice()
+        this.remaining = board.remaining.slice()
         if (board instanceof Board) {
             this.cells = board.cells.map(cell => ({ ...cell }))
         }
@@ -155,19 +160,18 @@ export default class Board {
 
     isOpponentChecker(player, point) {
         const cell = this.getCell(point)
-        return cell.side === Player.EMPTY ? false : cell.side !== player.side
+        if(player.side === Player.WHITE && cell.side === Player.BLACK ) {
+            return true
+        } else if(player.side === Player.Black && cell.side === Player.WHITE) {
+            return true
+        }
+        return false
     }
 
     /**
      * For expediency, we will assume that the starting cell has ben verified
      */
     isValidMove(player, startPoint, endPoint) {
-        // Is the player in startCell the right player?
-        //if (!this.isPlayerChecker(player, startPoint)) {
-        //    return false
-        //}
-
-        // Get adjoining cells for startCell
         const moves = this.getOpenMoves(player, startPoint)
         const ms  = moves.filter(move => move.contains(endPoint))
         return ms.length > 0
@@ -196,69 +200,114 @@ export default class Board {
             }
         })
 
-        return [...moves, ...this.getJumpMoves(startCell, startPoint)]
+        return [...moves, ...this.getJumpMoves([], startCell, startPoint)]
 
     }
 
-    getJumpMoves(startCell, startPoint) {
-        let moves = []
+    /**
+     *  Find avalable jump moves.  If the starting checker (cell) is a king, then
+     * be sure that the resulting set of potential moves doesn't include something
+     * already in the moves path
+     *
+     * @param {*} moves
+     * @param {*} startCell
+     * @param {*} startPoint
+     * @param {*} depth
+     * @returns
+     */
+    getJumpMoves(moves, startCell, startPoint, depth = 0) {
 
-        const possibilities = [] // Possible points
-
-        if (startCell.side === Player.WHITE || startCell.isKing) {
-            possibilities.push(new Point(startPoint.x + 2, startPoint.y + 2))
-            possibilities.push(new Point(startPoint.x - 2, startPoint.y + 2))
+        if(Board.inRange(startPoint) === false) {
+            return moves
         }
-        if (startCell.side === Player.BLACK || startCell.isKing) {
-            possibilities.push(new Point(startPoint.x + 2, startPoint.y - 2))
-            possibilities.push(new Point(startPoint.x - 2, startPoint.y - 2))
-        }
 
-        possibilities.forEach(point => {
+        const jumpCells =  this.getJumpCells(startCell, startPoint)
+        jumpCells.forEach(point => {
             const m = new Move(startPoint, point)
-            if (Board.inRange(point) && this.getCell(point).side === Player.EMPTY) {
-                const midPoint = m.findMiddle()
-                if(this.isOpponentChecker(startCell, midPoint) === true) {
-                    moves.push(m)
-                    moves = [...moves, ...this.getJumpMoves(startCell, point)]
-                }
+            if(moves.some(move => move.equals(m) || move.isReverse(m))) {
+                // Looks like we doubled back.  Bail
+                return moves
+            }
+            moves.push(m)
+
+            if( depth < 5 ) {
+                // recursively
+                const nextMoves = this.getJumpMoves(moves, startCell, point, depth + 1).filter(move => (
+                    !moves.some(mm => mm.equals(move))
+                ))
+                moves = [...moves.slice(), ...nextMoves]
             }
         })
         return moves
     }
 
+    getJumpCells(cell, point) {
+        const points = [] // Possible points
+
+        if (cell.side === Player.WHITE || cell.isKing) {
+            points.push(new Point(point.x + 2, point.y + 2))
+            points.push(new Point(point.x - 2, point.y + 2))
+        }
+        if (cell.side === Player.BLACK || cell.isKing) {
+            points.push(new Point(point.x + 2, point.y - 2))
+            points.push(new Point(point.x - 2, point.y - 2))
+        }
+        return points.filter(p => (
+            Board.inRange(p) &&
+            this.getCell(p).side === Player.EMPTY &&
+            this.isOpponentChecker(cell, new Move(point, p).findMiddle())
+        ))
+    }
 
     makeMove(move) {
-        console.log('Board.move:', move)
-        const startCell = this.getCell(move.start)
         const middle = move.findMiddle()
         // If there's a middle cell, then this is a jump move.  Remove the piece
         if(middle !== null) {
             this.removeCell(middle)
         }
-        this.setCell(move.end, startCell.side, startCell.isKing)
-        this.removeCell(move.start)
+        this.moveCell(move.start, move.end)
     }
 
 
     /***
      * get the cell by row, col
+     * @param {Point} point
+     * @returns {Cell} cell at point p
      */
     getCell(point) {
-        Point.testPoint(point)
+        Point.isPoint(point)
         return this.cells[point.y][point.x]
     }
 
     setCell(point, side, isKing = false) {
-        Point.testPoint(point)
+        Point.isPoint(point)
         const cell = this.getCell(point)
         cell.side = side
         cell.isKing = isKing
+        this.remaining[side] += 1
+        if(isKing){
+            this.kings[side] += 1
+        }
     }
 
+    moveCell(startPoint, endPoint) {
+        this.cells[endPoint.y][endPoint.x] = this.getCell(startPoint).clone()
+        this.cells[startPoint.y][startPoint.x] = Cell.makeEmpty()
+        const cell = this.getCell(endPoint)
+        if((endPoint.y === 0 || endPoint.y === MAX_ROW_COL-1) && !cell.isKing) {
+            cell.isKing = true
+            this.kings[cell.side] += 1
+
+        }
+    }
 
     removeCell(point) {
-        Point.testPoint(point)
+        Point.isPoint(point)
+        const cell = this.getCell(point)
+        this.remaining[cell.side] -= 1
+        if(cell.isKing) {
+            this.kings[cell.side] -= 1
+        }
         this.cells[point.y][point.x] = Cell.makeEmpty()
         return true
     }
@@ -276,17 +325,29 @@ export default class Board {
     }
 
     equals(board) {
-        if(board instanceof Board){
-            for(let rIdx = 0; rIdx < 8; rIdx++) {
-                for(let cIdx = 0; cIdx < 8; cIdx++) {
-                    const p = new Point(cIdx, rIdx)
-                    if(!this.getCell(p).equals(board.getCell(p))) {
+        if(board instanceof Board) {
+            if(!arrayEquals(this.remaining, board.remaining)) {
+                console.log('Board.equals: different remaining:', this.remaining, board.remaining)
+                return false
+            }
+            if(!arrayEquals(this.kings, board.kings)) {
+                console.log('Board.equals: different kings:', this.kings, board.kings)
+                return false
+            }
+            const ret = this.cells.every( (row, rIdx) => (
+                row.every((cell, cIdx) => {
+                    if(!cell.equals(board.getCell(new Point(cIdx, rIdx)))) {
+                        console.log('Board.equals: different cells', cell, board.getCell(new Point(cIdx, rIdx)))
                         return false
                     }
-                }
-            }
-            return true
+                    return true
+                })
+            ))
+            return ret
         }
-        return false
+        else {
+            console.log('Not a board')
+            return false
+        }
     }
 }

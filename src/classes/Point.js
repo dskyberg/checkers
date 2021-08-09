@@ -2,7 +2,7 @@ import {inRange} from '../utils/inRange'
 import { MAX_ROW_COL } from '../constants'
 export default class Point {
 
-    static testPoint(point) {
+    static isPoint(point) {
         if(point === undefined) {
             throw new Error('point is not defined')
         }
@@ -16,6 +16,12 @@ export default class Point {
             throw new Error(`xyis out of bounds: ${point.y}`)
         }
         return true
+    }
+
+    static testPoint(point) {
+        return (point instanceof Point) &&
+        inRange(point.x, -1, MAX_ROW_COL) &&
+        inRange(point.y, -1, MAX_ROW_COL)
     }
 
     static fromRowCol(row, col) {

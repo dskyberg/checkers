@@ -31,7 +31,7 @@ export default class Move {
     /**
      * Returns the middle cell in a jump move.  A jump move is defined as any
      * move where the end row is +- 2 of the start row
-     * @returns Point
+     * @returns {Poing) middle Point
      */
     findMiddle() {
         if(this.start.y !== this.end.y + 2 && this.start.y !== this.end.y - 2 ) {
@@ -47,6 +47,9 @@ export default class Move {
         return this.start.equals(point) || this.end.equals(point)
     }
 
+    isReverse(move) {
+        return this.start.equals(move.end) && this.end.equals(move.start)
+    }
     equals(move){
         return this.start.equals(move.start) && this.end.equals(move.end)
     }
