@@ -162,7 +162,8 @@ export default class Board {
         const cell = this.getCell(point)
         if(player.side === Player.WHITE && cell.side === Player.BLACK ) {
             return true
-        } else if(player.side === Player.Black && cell.side === Player.WHITE) {
+        }
+        if(player.side === Player.BLACK && cell.side === Player.WHITE) {
             return true
         }
         return false

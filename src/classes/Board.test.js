@@ -105,6 +105,22 @@ test(`one white and one black, no kings`, () => {
     expect(result).toEqual(expectedMoves)
 })
 
+test(`one black single jump, no kings`, () => {
+    const blackPoint = new Point(0, 5)
+    const whitePoint = new Point(1, 4)
+    const player = new Player(Player.WHITE)
+    const expectedMoves = [
+        new Move(new Point(0, 5), new Point(2, 3))
+    ]
+    const board = new Board([])
+    board.setCell(blackPoint, Player.BLACK, NOT_A_KING)
+    board.setCell(whitePoint, Player.WHITE, NOT_A_KING)
+    console.log(board.display())
+    const result = board.getOpenMoves(player, blackPoint)
+    console.log('result:',result)
+    expect(result).toEqual(expectedMoves)
+})
+
 test('double jump with no king', () => {
     const whitePoint = new Point(1, 0)
     const blackPoint1 = new Point(2, 1)
