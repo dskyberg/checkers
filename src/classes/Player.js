@@ -12,9 +12,8 @@ export default class Player {
 
     constructor(side, name) {
         // If no params parovided
-        if(side === undefined) {
-            this.side = Player.EMPTY
-            this.name = SIDE_NAME[this.side]
+        if(side === undefined || (!side instanceof Player) && (side !== Player.BLACK && side !== Player.WHITE )) {
+            throw new Error('Player must be either a Player instance, Player.WHITE or Player.BLACK')
         }
         // If cloning from another Player instance
         else if (side instanceof Player) {
@@ -23,9 +22,6 @@ export default class Player {
         }
         // Creating from parameters
         else {
-            if(side < Player.EMPTY || side > Player.WHITE) {
-                throw new Error('Player: bad side provided')
-            }
             this.side = side
             if(name === undefined) {
                 this.name = SIDE_NAME[this.side]
@@ -46,7 +42,8 @@ export default class Player {
         return `name: ${this.name}, side: ${SIDE_NAME[this.side]}`
     }
 
-   static opposing(type) {
-        return type === Player.WHITE ? Player.BLACK : type === Player.BLACK ? Player.WHITE : Player.EMPTY
+
+    opposing() {
+        return 3 - this.side
     }
 }

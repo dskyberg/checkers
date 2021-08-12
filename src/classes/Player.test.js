@@ -1,8 +1,7 @@
 import Player from './Player'
 
 test('toString', () => {
-    const s = new Player().toString()
-    expect(s).toEqual('name: Empty, side: Empty')
+    expect(() => {new Player()}).toThrow('Player must be either a Player instance, Player.WHITE or Player.BLACK')
 })
 
 test('White', () => {
