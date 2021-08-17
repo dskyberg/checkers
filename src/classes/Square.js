@@ -12,41 +12,47 @@ import Player from './Player'
 
 export default class Square {
 
-    static makeNonPlayable() {
-        return new Square()
+    static makeNonPlayable(point) {
+        return new Square(point)
     }
-    static makeEmpty() {
-        return new Square(true, Player.EMPTY, false)
-    }
-
-    static makeWhite(){
-        return new Square(true, Player.WHITE, false )
-    }
-    static makeWhiteKing() {
-        return Square.makeWhiteSquare(true)
-    }
-    static makeBlack() {
-       return new Square(true, Player.BLACK, false)
-    }
-    static makeBlackKing() {
-        return Square.makeBlack(true, Player.BLACK, false)
+    static makeEmpty(point) {
+        return new Square(point, true, Player.EMPTY, false)
     }
 
-    constructor(playable = false, side = Player.EMPTY, isKing = false){
+    static makeWhite(point){
+        return new Square(point, true, Player.WHITE, false )
+    }
+    static makeWhiteKing(point) {
+        return Square.makeWhiteSquare(point, true)
+    }
+    static makeBlack(point) {
+       return new Square(point, true, Player.BLACK, false)
+    }
+    static makeBlackKing(point) {
+        return Square.makeBlack(point, true, Player.BLACK, false)
+    }
+
+    constructor(point, playable = false, side = Player.EMPTY, isKing = false){
+        this.point = point
         this.playable = playable
         this.side = side
         this.isKing = isKing
+    }
+
+    move(point) {
+        this.point = point
+        return this
     }
 
     equals(square) {
         if(!(square instanceof Square)) {
             return false
         }
-        return this.playable === square.playable && this.side === square.side && this.isKing === square.isKing
+        return this.point.equals(square.point) && this.playable === square.playable && this.side === square.side && this.isKing === square.isKing
     }
 
     clone() {
-        return new Square(this.playable, this.side, this.isKing)
+        return new Square(this.point, this.playable, this.side, this.isKing)
     }
 
     toString() {

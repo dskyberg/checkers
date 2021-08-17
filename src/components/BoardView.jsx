@@ -83,7 +83,7 @@ const BoardView = observer(() => {
                         size={NUM_SQUARES}
                         point={point}
                         selected={point.in(selected)}
-                        state={board.getSquare(new Point(col,row))}
+                        state={board.getSquare(point)}
                         onClick={handleSquareClick}
                     />
                 )

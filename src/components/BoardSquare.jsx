@@ -23,7 +23,6 @@ const BoardSquare = observer((props) => {
     const classes = useStyles(colors)
     const playable = playableSquare(point)
     const bgColor = playable === false ? colors.lightSquare : selected === true ? colors.selectedSquare : colors.darkSquare
-    console.log(`BoardSquare: point=${point}, playable=${playable}, bgColor=${bgColor}`)
     const svgStyle = {
         height: NUM_SQUARES - 10, width: NUM_SQUARES - 10,
         marginTop: 5, marginLeft: 5,

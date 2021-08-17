@@ -58,7 +58,6 @@ const KingCrown = ({colorSecondary, colorPrimary}) => {
 
 const Checker = (props) => {
     const { player, svgStyle, isKing, colors} = props
-
     const colorPrimary = colors[player].primary
     const colorSecondary = colors[player].secondary
 

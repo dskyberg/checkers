@@ -17,8 +17,10 @@ test(`one white`, () => {
     ]
 
     const board = new Board([])
-    board.setSquare(point, player.side, NOT_A_KING)
+    //console.log(board.display())
 
+    board.setSquare(point, player.side, NOT_A_KING)
+    //console.log(board.display())
     const result = board.getOpenMoves(player, point)
     expect(result).toEqual(expectedMoves)
 })
@@ -115,13 +117,13 @@ test(`one black single jump, no kings`, () => {
     const board = new Board([])
     board.setSquare(blackPoint, Player.BLACK, NOT_A_KING)
     board.setSquare(whitePoint, Player.WHITE, NOT_A_KING)
-    console.log(board.display())
+    //console.log(board.display())
     const result = board.getOpenMoves(player, blackPoint)
-    console.log('result:',result)
+    //console.log('result:',result)
     expect(result).toEqual(expectedMoves)
 })
 
-test('double jump with no king', () => {
+test('triple jump with no king', () => {
     const whitePoint = new Point(1, 0)
     const blackPoint1 = new Point(2, 1)
     const jumpEnd1 = new Point(3,2)
@@ -131,6 +133,14 @@ test('double jump with no king', () => {
     const jumpEnd3 = new Point(7,6)
     const player = new Player(Player.WHITE)
     const opponent = new Player(Player.BLACK)
+    /*
+          [
+        Move { start: Point { x: 1, y: 0 }, end: Point { x: 0, y: 1 } },
+        Move { start: Point { x: 1, y: 0 }, end: Point { x: 3, y: 2 } },
+        Move { start: Point { x: 3, y: 2 }, end: Point { x: 5, y: 4 } },
+        Move { start: Point { x: 5, y: 4 }, end: Point { x: 7, y: 6 } }
+      ]
+      */
     const expectedMoves = [
         new Move(whitePoint, new Point(0,1)),
         new Move(whitePoint, jumpEnd1),

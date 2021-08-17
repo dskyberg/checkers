@@ -147,11 +147,12 @@ export default class Board {
         for (let row = 0; row < MAX_ROW_COL; row++) {
             this.squares.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
-                if (!isDarkSquare(new Point(col, row))) {
-                    this.squares[row].push(Square.makeNonPlayable())
+                const point = new Point(col, row)
+                if (!isDarkSquare(point)) {
+                    this.squares[row].push(Square.makeNonPlayable(point))
                 }
                 else {
-                    this.squares[row].push(Square.makeEmpty())
+                    this.squares[row].push(Square.makeEmpty(point))
                 }
             }
         }
@@ -172,17 +173,18 @@ export default class Board {
         for (let row = 0; row < MAX_ROW_COL; row++) {
             this.squares.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
-                if (!isDarkSquare(new Point(col, row))) {
-                    this.squares[row].push(Square.makeNonPlayable())
+                const point = new Point(col, row)
+                if (!isDarkSquare(point)) {
+                    this.squares[row].push(Square.makeNonPlayable(point))
                 }
                 else if (blackRows.includes(row)) {
-                    this.squares[row].push(Square.makeBlack())
+                    this.squares[row].push(Square.makeBlack(point))
                 }
                 else if (whiteRows.includes(row)) {
-                    this.squares[row].push(Square.makeWhite())
+                    this.squares[row].push(Square.makeWhite(point))
                 }
                 else {
-                    this.squares[row].push(Square.makeEmpty())
+                    this.squares[row].push(Square.makeEmpty(point))
                 }
             }
         }
@@ -243,6 +245,12 @@ export default class Board {
         return this.kings[side] * 1.2 + this.remaining[side]
     }
 
+    /**
+     * Determine the game state.  Is it at a win, loss, draw yet?
+     */
+    evaluate(side) {
+
+    }
     /**
      * Return true if the square contains a checker for the current player
      * @param {Player} player - Player to test the square against
@@ -338,6 +346,12 @@ export default class Board {
         return moves
     }
 
+    /**
+     *
+     * @param {Square} square the starting square
+     * @param {*} point
+     * @returns
+     */
     getJumpSquares(square, point) {
         const points = [] // Possible points
 
@@ -388,8 +402,9 @@ export default class Board {
     }
 
     moveSquare(startPoint, endPoint) {
-        this.squares[endPoint.y][endPoint.x] = this.getSquare(startPoint).clone()
-        this.squares[startPoint.y][startPoint.x] = Square.makeEmpty()
+
+        this.squares[endPoint.y][endPoint.x] = this.getSquare(startPoint).clone().move(endPoint)
+        this.squares[startPoint.y][startPoint.x] = Square.makeEmpty(startPoint)
         const square = this.getSquare(endPoint)
         if ((endPoint.y === 0 || endPoint.y === MAX_ROW_COL - 1) && !square.isKing) {
             square.isKing = true
@@ -405,7 +420,7 @@ export default class Board {
         if (square.isKing) {
             this.kings[square.side] -= 1
         }
-        this.squares[point.y][point.x] = Square.makeEmpty()
+        this.squares[point.y][point.x] = Square.makeEmpty(point)
         return true
     }
 
