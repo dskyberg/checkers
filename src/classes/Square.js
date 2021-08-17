@@ -1,6 +1,6 @@
 /**
- * Every cell needs a proper object to describe it, even if i's not playable.
- * Note, and empty cell is not the same as a non playable cell.  A cell is one of
+ * Every square needs a proper object to describe it, even if i's not playable.
+ * Note, and empty square is not the same as a non playable square.  A square is one of
  *  *  nonplayable
  *  *  empty
  *  *  white ( or white king)
@@ -10,26 +10,26 @@
 import Player from './Player'
 
 
-export default class Cell {
+export default class Square {
 
     static makeNonPlayable() {
-        return new Cell()
+        return new Square()
     }
     static makeEmpty() {
-        return new Cell(true, Player.EMPTY, false)
+        return new Square(true, Player.EMPTY, false)
     }
 
     static makeWhite(){
-        return new Cell(true, Player.WHITE, false )
+        return new Square(true, Player.WHITE, false )
     }
     static makeWhiteKing() {
-        return Cell.makeWhiteCell(true)
+        return Square.makeWhiteSquare(true)
     }
     static makeBlack() {
-       return new Cell(true, Player.BLACK, false)
+       return new Square(true, Player.BLACK, false)
     }
     static makeBlackKing() {
-        return Cell.makeBlack(true, Player.BLACK, false)
+        return Square.makeBlack(true, Player.BLACK, false)
     }
 
     constructor(playable = false, side = Player.EMPTY, isKing = false){
@@ -38,15 +38,15 @@ export default class Cell {
         this.isKing = isKing
     }
 
-    equals(cell) {
-        if(!(cell instanceof Cell)) {
+    equals(square) {
+        if(!(square instanceof Square)) {
             return false
         }
-        return this.playable === cell.playable && this.side === cell.side && this.isKing === cell.isKing
+        return this.playable === square.playable && this.side === square.side && this.isKing === square.isKing
     }
 
     clone() {
-        return new Cell(this.playable, this.side, this.isKing)
+        return new Square(this.playable, this.side, this.isKing)
     }
 
     toString() {

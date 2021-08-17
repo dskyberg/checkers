@@ -29,7 +29,7 @@ export default class Move {
     }
 
     /**
-     * Returns the middle cell in a jump move.  A jump move is defined as any
+     * Returns the middle square in a jump move.  A jump move is defined as any
      * move where the end row is +- 2 of the start row
      * @returns {Poing) middle Point
      */

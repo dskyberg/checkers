@@ -6,7 +6,7 @@ import Point from '../classes/Point'
 import Move from '../classes/Move'
 
 import { makeStyles } from "@material-ui/core/styles";
-import BoardCell from './BoardCell'
+import BoardSquare from './BoardSquare'
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -30,7 +30,7 @@ const BoardView = observer(() => {
     const [selected, setSelected] = React.useState()
 
 
-    const handleCellClick = (point) => {
+    const handleSquareClick = (point) => {
         manageSelections(point)
     }
 
@@ -48,7 +48,7 @@ const BoardView = observer(() => {
             setSelected(undefined)
         }
 
-        // If this is the last selected cell, then commit the move
+        // If this is the last selected square, then commit the move
         else if(point.equals(selected[selected.length - 1])) {
             let lastPoint = null
             selected.forEach(point => {
@@ -72,24 +72,24 @@ const BoardView = observer(() => {
     }
 
     const buildGrid = (NUM_SQUARES, MAX_ROW_COL) => {
-        const cells = []
+        const squares = []
         for (let row = 0; row < MAX_ROW_COL; row++) {
             for (let col = 0; col < MAX_ROW_COL; col++) {
                 const id = `${row}_${col}`
                 const point = new Point(col,row)
-                cells.push(
-                    <BoardCell
+                squares.push(
+                    <BoardSquare
                         key={id}
                         size={NUM_SQUARES}
                         point={point}
                         selected={point.in(selected)}
-                        state={board.getCell(new Point(col,row))}
-                        onClick={handleCellClick}
+                        state={board.getSquare(new Point(col,row))}
+                        onClick={handleSquareClick}
                     />
                 )
             }
         }
-        return cells
+        return squares
     }
 
     return (

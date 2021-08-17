@@ -28,15 +28,17 @@ const Header = observer((props) => {
         <AppBar>
         <Toolbar>
           <Box className={classes.title} flexDirection="column">
-            <Typography >Remaining White: {settings.board.remaining[PLayer.WHITE]}</Typography>
-            <Typography >White Kings: {settings.board.kings[PLayer.WHITE]}</Typography>
+            <Typography variant="subtitle2" >Remaining White: {settings.board.remaining[PLayer.WHITE]}</Typography>
+            <Typography variant="subtitle2">White Kings: {settings.board.kings[PLayer.WHITE]}</Typography>
+            <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.WHITE)}</Typography>
           </Box>
           <Typography variant="h6" className={classes.title}>
             {settings.banner}
           </Typography>
           <Box className={classes.title} flexDirection="column">
-            <Typography >Remaining Black: {settings.board.remaining[Player.BLACK]}</Typography>
-            <Typography >Black Kings: {settings.board.kings[Player.BLACK]}</Typography>
+            <Typography variant="subtitle2">Remaining Black: {settings.board.remaining[Player.BLACK]}</Typography>
+            <Typography variant="subtitle2">Black Kings: {settings.board.kings[Player.BLACK]}</Typography>
+            <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.BLACK)}</Typography>
           </Box>
           <Button color="inherit" onClick={handleNewGame}>New Game</Button>
         </Toolbar>

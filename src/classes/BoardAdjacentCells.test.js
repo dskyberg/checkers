@@ -1,7 +1,7 @@
-import {adjacentCells} from './Board'
+import {adjacentSquares} from './Board'
 import Point from './Point'
 
-// Cell isn't playale
+// Square isn't playale
 const upperLeft = new Point(0,0)
 
 const upperRight = new Point(7,0)
@@ -48,38 +48,38 @@ const goodCenterLast = [
     {x:6, y:5}
 ]
 
-test( 'adjacentCells - upper left', () => {
-    expect(() => {adjacentCells(upperLeft)}).toThrow('Not a valid cell');
+test( 'adjacentSquares - upper left', () => {
+    expect(() => {adjacentSquares(upperLeft)}).toThrow('Not a valid square');
 })
 
-test( 'adjacentCells - upper right', () => {
-    expect(adjacentCells(upperRight)).toEqual(goodUpperRight)
+test( 'adjacentSquares - upper right', () => {
+    expect(adjacentSquares(upperRight)).toEqual(goodUpperRight)
 })
 
-test( 'adjacentCells - lower left', () => {
-    expect(adjacentCells(lowerLeft)).toEqual(goodLowerLeft)
+test( 'adjacentSquares - lower left', () => {
+    expect(adjacentSquares(lowerLeft)).toEqual(goodLowerLeft)
 })
 
-test( 'adjacentCells - lower right', () => {
-    expect(() => {adjacentCells(lowerRight)}).toThrow('Not a valid cell')
+test( 'adjacentSquares - lower right', () => {
+    expect(() => {adjacentSquares(lowerRight)}).toThrow('Not a valid square')
 })
 
-test( 'adjacentCells - center', () => {
-    expect(adjacentCells(center)).toEqual(goodCenter)
+test( 'adjacentSquares - center', () => {
+    expect(adjacentSquares(center)).toEqual(goodCenter)
 })
 
-test( 'adjacentCells - first center', () => {
-    expect(adjacentCells(firstCenter)).toEqual(goodFirstCenter)
+test( 'adjacentSquares - first center', () => {
+    expect(adjacentSquares(firstCenter)).toEqual(goodFirstCenter)
 })
 
-test( 'adjacentCells - last center', () => {
-    expect(adjacentCells(lastCenter)).toEqual(goodLastCenter)
+test( 'adjacentSquares - last center', () => {
+    expect(adjacentSquares(lastCenter)).toEqual(goodLastCenter)
 })
 
-test( 'adjacentCells - center first ', () => {
-    expect(adjacentCells(centerFirst)).toEqual(goodCenterFirst)
+test( 'adjacentSquares - center first ', () => {
+    expect(adjacentSquares(centerFirst)).toEqual(goodCenterFirst)
 })
 
-test( 'adjacentCells - center last ', () => {
-    expect(adjacentCells(centerLast)).toEqual(goodCenterLast)
+test( 'adjacentSquares - center last ', () => {
+    expect(adjacentSquares(centerLast)).toEqual(goodCenterLast)
 })

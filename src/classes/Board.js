@@ -8,11 +8,10 @@
  *
  * It's also true that if m xor n is true, then the square is dark.
  */
-import { isEven } from '../utils/isEven'
-import { inRange, arrayEquals } from '../utils'
+import { inRange, arrayEquals, isEven } from '../utils'
 import { MAX_ROW_COL } from '../constants'
 import Point from './Point'
-import Cell from './Cell'
+import Square from './Square'
 import Player from './Player'
 import Move from './Move'
 
@@ -20,36 +19,36 @@ const whiteRows = [0, 1, 2]
 const blackRows = [5, 6, 7]
 
 // Checkers is played on the diagonal black squares. Sin
-const isValidCell = (point) => inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
+const isValidSquare = (point) => inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
 
-const isDarkCell = (point) => !isEven(point.x + point.y) //xor(isEven(point.y), isEven(point.x))
+const isDarkSquare = (point) => !isEven(point.x + point.y) //xor(isEven(point.y), isEven(point.x))
 
-export const adjacentCells = (point) => {
-    if (!isDarkCell(point)) {
-        throw new Error('Not a valid cell')
+export const adjacentSquares = (point) => {
+    if (!isDarkSquare(point)) {
+        throw new Error('Not a valid square')
     }
     return [
         new Point(point.x - 1, point.y - 1),
         new Point(point.x + 1, point.y - 1),
         new Point(point.x - 1, point.y + 1),
         new Point(point.x + 1, point.y + 1)
-    ].filter(point => isValidCell(point))
+    ].filter(point => isValidSquare(point))
 }
 
 
 /**
- * Test to see if the direction of the target cell is legit for the starting
- * cell.  Meaning, Player.WHITE cells go toward the top and Player.BLACK cells
+ * Test to see if the direction of the target square is legit for the starting
+ * square.  Meaning, Player.WHITE squares go toward the top and Player.BLACK squares
  * go toward the bottom of the board.  Kings go either way
  */
-const isDirectionalCell = (cell, startPoint, point) => {
-    if (cell.isKing === false) {
+const isDirectionalSquare = (square, startPoint, point) => {
+    if (square.isKing === false) {
         // WHITE can only go up
-        if (cell.side === Player.WHITE && point.y < startPoint.y) {
+        if (square.side === Player.WHITE && point.y < startPoint.y) {
             return false
         }
         // BLACK can only go down
-        if (cell.side === Player.BLACK && point.y > startPoint.y) {
+        if (square.side === Player.BLACK && point.y > startPoint.y) {
             return false
         }
     }
@@ -59,14 +58,14 @@ const isDirectionalCell = (cell, startPoint, point) => {
 
 
 /**
- * The Board class manages the cells, and checkers in cells
+ * The Board class manages the squares, and checkers in squares
  * You can create 3 types of board.
  *  * Default setup with white checkers on rows 0-3 and back ckechers on rows 5-7
  *  * Empty board, to make testing easier
  *  * A clone of another board
  */
 export default class Board {
-    cells = []
+    squares = []
     kings = [0, 0, 0]
     remaining = [0, 12, 12]
 
@@ -74,166 +73,263 @@ export default class Board {
         return inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
     }
 
-    constructor(board) {
-        // If no template is provided, create a standard setup
-        if (board === undefined) {
-            this.resetBoard()
-        } else {
-            if (board.length === 0) {
-                // passing an empty array results in an empty board.
-                // Each cells is populated correctly, with no checkers
-                this.emptyBoard()
-            } else {
-                this.cloneFrom(board)
+    static minimax(board, depth, side, maximizingPlayer, alpha, beta) {
+        if(depth == 0) {
+            return board.calculate(side);
+        }
+        const possibleMoves = board.getAllValidMoves(side);
+
+        let initial = 0.0;
+        let tempBoard = null;
+        if(maximizingPlayer)
+        {
+            initial = Number.NEGATIVE_INFINITY;
+            for(let i = 0; i < possibleMoves.length; i++)
+            {
+                tempBoard = board.clone();
+                tempBoard.makeMove(possibleMoves.get(i), side);
+
+                const result = Board.minimax(tempBoard, depth - 1, Player.OpposingPlayer(side), !maximizingPlayer, alpha, beta);
+
+                initial = Math.max(result, initial);
+                alpha = Math.max(alpha, initial);
+
+                if(alpha >= beta)
+                    break;
+            }
+        }
+        //minimizing
+        else
+        {
+            initial = Number.POSITIVE_INFINITY;
+            for(let i = 0; i < possibleMoves.size(); i++)
+            {
+                tempBoard = board.clone();
+                tempBoard.makeMove(possibleMoves.get(i), side);
+
+                const result = Board.minimax(tempBoard, depth - 1, Player.OpposingPlayer(side), !maximizingPlayer, alpha, beta);
+
+                initial = Math.min(result, initial);
+                alpha = Math.min(alpha, initial);
+
+                if(alpha >= beta)
+                    break;
             }
         }
 
+        return initial;
     }
 
-    emptyBoard(startingPlayer = Player.WHITE) {
-        this.cells = []
+    constructor(board) {
+        if(board instanceof Board) {
+                this.copyFrom(board)
+        }
+        else if(Array.isArray(board) && board.length === 0) {
+            this.emptyBoard()
+        }
+        // If no template is provided, create a standard setup
+        else {
+            this.resetBoard()
+        }
+    }
+
+    /**
+     * Creates an empty board that can then have checkers individually added via
+     * Board.setSquare().  This is only used for testing
+     *
+     * @returns {Board} this instance
+     */
+    emptyBoard() {
+        this.squares = []
         this.kings = [0, 0, 0]
         this.remaining = [0, 0, 0]
 
         for (let row = 0; row < MAX_ROW_COL; row++) {
-            this.cells.push([])
+            this.squares.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
-                if (!isDarkCell(new Point(col, row))) {
-                    this.cells[row].push(Cell.makeNonPlayable())
+                if (!isDarkSquare(new Point(col, row))) {
+                    this.squares[row].push(Square.makeNonPlayable())
                 }
                 else {
-                    this.cells[row].push(Cell.makeEmpty())
+                    this.squares[row].push(Square.makeEmpty())
                 }
             }
         }
-
+        return this
     }
 
-    resetBoard(startingPlayer = Player.WHITE) {
-        this.cells = []
+    /**
+     * Sets the board up in the default configuration: 12 checkers per side, with
+     * Player.WHITE checkers in rows 0-2 and Player.BLACK checkers in rows 5-7
+     *
+     * @returns {Board} returns this instance
+     */
+    resetBoard() {
+        this.squares = []
         this.kings = [0, 0, 0]
         this.remaining = [0, 12, 12]
 
         for (let row = 0; row < MAX_ROW_COL; row++) {
-            this.cells.push([])
+            this.squares.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
-                if (!isDarkCell(new Point(col, row))) {
-                    this.cells[row].push(Cell.makeNonPlayable())
+                if (!isDarkSquare(new Point(col, row))) {
+                    this.squares[row].push(Square.makeNonPlayable())
                 }
                 else if (blackRows.includes(row)) {
-                    this.cells[row].push(Cell.makeBlack())
+                    this.squares[row].push(Square.makeBlack())
                 }
                 else if (whiteRows.includes(row)) {
-                    this.cells[row].push(Cell.makeWhite())
+                    this.squares[row].push(Square.makeWhite())
                 }
                 else {
-                    this.cells[row].push(Cell.makeEmpty())
+                    this.squares[row].push(Square.makeEmpty())
                 }
             }
         }
+        return this
     }
 
     /**
- *  Creates a new Board instance from this
- * @param {Board, Array} board Either an instance of Board, or an array of cell objects
- */
-    cloneFrom(board) {
+     *  Update this board from another board
+     * @param {Board} board Either an instance of Board, or an array of square objects
+     * @returns {Board} this instance
+     */
+    copyFrom(board) {
+        if (!(board instanceof Board)) {
+            throw new Error('Board.cloneFrom needs a Board ')
+        }
+
         this.kings = board.kings.slice()
         this.remaining = board.remaining.slice()
-        if (board instanceof Board) {
-            this.cells = board.cells.map(cell => ({ ...cell }))
-        }
-        else if (Array.isArray(board)) {
-            this.cells = board.map(cell => ({ ...cell }))
-        }
-        else {
-            throw new Error('Board.cloneFrom needs a Board or array of cells')
-        }
+        this.squares = board.squares.map(row => row.slice())
+        return this
     }
 
     /**
-     * Return true if the cell contains a checker for the current player
-    **/
-    isPlayerChecker(player, point) {
-        return player.side === this.getCell(point).side
+     * Clone a new board from this board
+     *
+     * @returns {Board} the new board
+     */
+    clone() {
+        const board = new Board()
+        board.copyFrom(this)
+        return board
+    }
+    /**
+     * Calculates the current value of the board for the player based on the number
+     * of pieces and kings vs the opponent's number of pieces and kings
+     *
+     * @param {number} side Either Player.WHITE or Player.BLACK
+     * @returns nummber
+     */
+    calculate(side) {
+        if (side === Player.WHITE) {
+            return this.calculateSide(Player.WHITE) - this.calculateSide(Player.BLACK)
+        }
+        if (side === Player.BLACK) {
+            return this.calculateSide(Player.BLACK) - this.calculateSide(Player.WHITE)
+        }
+        // Just in case
+        console.log('Board.calculate - bad value for side:', side)
+        return 0
     }
 
+    /**
+     * Only called by Board.calculate
+     * @param {number} side The side to calculate (either Payer.WHITE or Player.BLACk)
+     * @returns {number} The calculated vaue
+     */
+    calculateSide(side) {
+        return this.kings[side] * 1.2 + this.remaining[side]
+    }
+
+    /**
+     * Return true if the square contains a checker for the current player
+     * @param {Player} player - Player to test the square against
+     * @param {Point} point - the location of the square to test
+     * @returns {boolean} true if the square matches the player side
+    **/
+    isPlayerChecker(player, point) {
+        return player.side === this.getSquare(point).side
+    }
+
+
     isOpponentChecker(player, point) {
-        const cell = this.getCell(point)
-        if(player.side === Player.WHITE && cell.side === Player.BLACK ) {
+        const square = this.getSquare(point)
+        if (player.side === Player.WHITE && square.side === Player.BLACK) {
             return true
         }
-        if(player.side === Player.BLACK && cell.side === Player.WHITE) {
+        if (player.side === Player.BLACK && square.side === Player.WHITE) {
             return true
         }
         return false
     }
 
     /**
-     * For expediency, we will assume that the starting cell has ben verified
+     * For expediency, we will assume that the starting square has ben verified
      */
     isValidMove(player, startPoint, endPoint) {
         const moves = this.getOpenMoves(player, startPoint)
-        const ms  = moves.filter(move => move.contains(endPoint))
+        const ms = moves.filter(move => move.contains(endPoint))
         return ms.length > 0
     }
 
 
     getOpenMoves(player, startPoint) {
-        const startCell = this.getCell(startPoint)
-        // Get the adjascent cells, and look for open ones
-        const availableCells = adjacentCells(startPoint)
+        const startSquare = this.getSquare(startPoint)
+        // Get the adjascent squares, and look for open ones
+        const availableSquares = adjacentSquares(startPoint)
         const moves = []
-        availableCells.forEach(point => {
+        availableSquares.forEach(point => {
             // filter for directionality
-            if (!isDirectionalCell(startCell, startPoint, point)) {
+            if (!isDirectionalSquare(startSquare, startPoint, point)) {
                 return
             }
 
             // Filter for open squares
-            let cell = this.getCell(point)
-            if (cell.side === Player.EMPTY) {
+            let square = this.getSquare(point)
+            if (square.side === Player.EMPTY) {
                 moves.push(new Move(startPoint, point));
                 return
             }
-            if (cell.side === startCell.side) {
+            if (square.side === startSquare.side) {
                 return
             }
         })
 
-        return [...moves, ...this.getJumpMoves([], startCell, startPoint)]
+        return [...moves, ...this.getJumpMoves([], startSquare, startPoint)]
 
     }
 
     /**
-     *  Find avalable jump moves.  If the starting checker (cell) is a king, then
+     *  Find avalable jump moves.  If the starting checker (square) is a king, then
      * be sure that the resulting set of potential moves doesn't include something
      * already in the moves path
      *
      * @param {*} moves
-     * @param {*} startCell
+     * @param {*} startSquare
      * @param {*} startPoint
      * @param {*} depth
      * @returns
      */
-    getJumpMoves(moves, startCell, startPoint, depth = 0) {
+    getJumpMoves(moves, startSquare, startPoint, depth = 0) {
 
-        if(Board.inRange(startPoint) === false) {
+        if (Board.inRange(startPoint) === false) {
             return moves
         }
 
-        const jumpCells =  this.getJumpCells(startCell, startPoint)
-        jumpCells.forEach(point => {
+        const jumpSquares = this.getJumpSquares(startSquare, startPoint)
+        jumpSquares.forEach(point => {
             const m = new Move(startPoint, point)
-            if(moves.some(move => move.equals(m) || move.isReverse(m))) {
+            if (moves.some(move => move.equals(m) || move.isReverse(m))) {
                 // Looks like we doubled back.  Bail
                 return moves
             }
             moves.push(m)
 
-            if( depth < 5 ) {
+            if (depth < 5) {
                 // recursively
-                const nextMoves = this.getJumpMoves(moves, startCell, point, depth + 1).filter(move => (
+                const nextMoves = this.getJumpMoves(moves, startSquare, point, depth + 1).filter(move => (
                     !moves.some(mm => mm.equals(move))
                 ))
                 moves = [...moves.slice(), ...nextMoves]
@@ -242,74 +338,74 @@ export default class Board {
         return moves
     }
 
-    getJumpCells(cell, point) {
+    getJumpSquares(square, point) {
         const points = [] // Possible points
 
-        if (cell.side === Player.WHITE || cell.isKing) {
+        if (square.side === Player.WHITE || square.isKing) {
             points.push(new Point(point.x + 2, point.y + 2))
             points.push(new Point(point.x - 2, point.y + 2))
         }
-        if (cell.side === Player.BLACK || cell.isKing) {
+        if (square.side === Player.BLACK || square.isKing) {
             points.push(new Point(point.x + 2, point.y - 2))
             points.push(new Point(point.x - 2, point.y - 2))
         }
         return points.filter(p => (
             Board.inRange(p) &&
-            this.getCell(p).side === Player.EMPTY &&
-            this.isOpponentChecker(cell, new Move(point, p).findMiddle())
+            this.getSquare(p).side === Player.EMPTY &&
+            this.isOpponentChecker(square, new Move(point, p).findMiddle())
         ))
     }
 
     makeMove(move) {
         const middle = move.findMiddle()
-        // If there's a middle cell, then this is a jump move.  Remove the piece
-        if(middle !== null) {
-            this.removeCell(middle)
+        // If there's a middle square, then this is a jump move.  Remove the piece
+        if (middle !== null) {
+            this.removeSquare(middle)
         }
-        this.moveCell(move.start, move.end)
+        this.moveSquare(move.start, move.end)
     }
 
 
     /***
-     * get the cell by row, col
+     * get the square by row, col
      * @param {Point} point
-     * @returns {Cell} cell at point p
+     * @returns {Square} square at point p
      */
-    getCell(point) {
+    getSquare(point) {
         Point.isPoint(point)
-        return this.cells[point.y][point.x]
+        return this.squares[point.y][point.x]
     }
 
-    setCell(point, side, isKing = false) {
+    setSquare(point, side, isKing = false) {
         Point.isPoint(point)
-        const cell = this.getCell(point)
-        cell.side = side
-        cell.isKing = isKing
+        const square = this.getSquare(point)
+        square.side = side
+        square.isKing = isKing
         this.remaining[side] += 1
-        if(isKing){
+        if (isKing) {
             this.kings[side] += 1
         }
     }
 
-    moveCell(startPoint, endPoint) {
-        this.cells[endPoint.y][endPoint.x] = this.getCell(startPoint).clone()
-        this.cells[startPoint.y][startPoint.x] = Cell.makeEmpty()
-        const cell = this.getCell(endPoint)
-        if((endPoint.y === 0 || endPoint.y === MAX_ROW_COL-1) && !cell.isKing) {
-            cell.isKing = true
-            this.kings[cell.side] += 1
+    moveSquare(startPoint, endPoint) {
+        this.squares[endPoint.y][endPoint.x] = this.getSquare(startPoint).clone()
+        this.squares[startPoint.y][startPoint.x] = Square.makeEmpty()
+        const square = this.getSquare(endPoint)
+        if ((endPoint.y === 0 || endPoint.y === MAX_ROW_COL - 1) && !square.isKing) {
+            square.isKing = true
+            this.kings[square.side] += 1
 
         }
     }
 
-    removeCell(point) {
+    removeSquare(point) {
         Point.isPoint(point)
-        const cell = this.getCell(point)
-        this.remaining[cell.side] -= 1
-        if(cell.isKing) {
-            this.kings[cell.side] -= 1
+        const square = this.getSquare(point)
+        this.remaining[square.side] -= 1
+        if (square.isKing) {
+            this.kings[square.side] -= 1
         }
-        this.cells[point.y][point.x] = Cell.makeEmpty()
+        this.squares[point.y][point.x] = Square.makeEmpty()
         return true
     }
 
@@ -318,27 +414,27 @@ export default class Board {
         const printColNums = () => '     0     1     2     3     4     5     6     7\n' + printSeparatorRow()
         const printRow = (idx, row) => (`${idx} |` + row.map((col, idx) => `  ${col.toString()}  |`).join('')) + '\n' + printSeparatorRow()
 
-        return printColNums() + this.cells.map((row, idx) => printRow(idx, row)).join('')
+        return printColNums() + this.squares.map((row, idx) => printRow(idx, row)).join('')
     }
 
     toString() {
-        return JSON.stringify(this.cells,null, 2)
+        return JSON.stringify(this.squares, null, 2)
     }
 
     equals(board) {
-        if(board instanceof Board) {
-            if(!arrayEquals(this.remaining, board.remaining)) {
+        if (board instanceof Board) {
+            if (!arrayEquals(this.remaining, board.remaining)) {
                 console.log('Board.equals: different remaining:', this.remaining, board.remaining)
                 return false
             }
-            if(!arrayEquals(this.kings, board.kings)) {
+            if (!arrayEquals(this.kings, board.kings)) {
                 console.log('Board.equals: different kings:', this.kings, board.kings)
                 return false
             }
-            const ret = this.cells.every( (row, rIdx) => (
-                row.every((cell, cIdx) => {
-                    if(!cell.equals(board.getCell(new Point(cIdx, rIdx)))) {
-                        console.log('Board.equals: different cells', cell, board.getCell(new Point(cIdx, rIdx)))
+            const ret = this.squares.every((row, rIdx) => (
+                row.every((square, cIdx) => {
+                    if (!square.equals(board.getSquare(new Point(cIdx, rIdx)))) {
+                        console.log('Board.equals: different squares', square, board.getSquare(new Point(cIdx, rIdx)))
                         return false
                     }
                     return true

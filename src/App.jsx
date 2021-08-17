@@ -41,7 +41,7 @@ const App = observer(() => {
    * Process the user's move, looks to see if the game is  done.  If not, moves
    * for the ai
    *
-   * @param {int} index The cell that was clicked
+   * @param {int} index The square that was clicked
    */
 
   // Use React.Fragment, so that we can throw the dialog box at the bottom of

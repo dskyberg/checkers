@@ -1,5 +1,6 @@
 import React from 'react'
 import Settings from './Settings';
+import Colors from './Colors'
 
 const StoreContext = React.createContext(null)
 
@@ -15,6 +16,7 @@ export const StoreProvider = ({ children }) => {
 
     const store = {
       settings: new Settings(),
+      colors: new Colors(),
     }
 
     return (

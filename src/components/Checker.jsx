@@ -3,7 +3,6 @@
  *
  */
 import React from 'react'
-import { grey } from '@material-ui/core/colors'
 
 const viewSize = 128
 const xy = viewSize / 2
@@ -23,17 +22,7 @@ const findPoint = (cx, cy, rad, cornerGrad) => {
     return { x: nx, y: ny }
 }
 
-const playerColors = [
-    {}, // Empty
-    {  // Black
-        primary: grey[800],
-        secondary: grey[100],
-    },
-    { // White
-        primary: grey[100],
-        secondary: grey[800],
-    },
-]
+
 
 /**
  *  Calculate start, stop points to draw lines around the edge of the checker
@@ -68,10 +57,10 @@ const KingCrown = ({colorSecondary, colorPrimary}) => {
 }
 
 const Checker = (props) => {
-    const { player, svgStyle, isKing} = props
+    const { player, svgStyle, isKing, colors} = props
 
-    const colorPrimary = playerColors[player].primary
-    const colorSecondary = playerColors[player].secondary
+    const colorPrimary = colors[player].primary
+    const colorSecondary = colors[player].secondary
 
     return (
         <svg viewBox="0 0 128 128" style={svgStyle}>
