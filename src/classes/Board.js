@@ -317,9 +317,8 @@ export default class Board {
      * @param {Point} endPoint
      * @returns {boolean}
      */
-    isValidMove(player, startPoint, endPoint) {
-        const moves = this.getOpenMoves(player, startPoint)
-        const move = new Move(startPoint, endPoint)
+    isValidMove(player, move) {
+        const moves = this.getOpenMoves(move.start)
         //const ms = moves.filter(move => move.contains(endPoint))
         const ms = moves.filter(m => m.equals(move))
         return ms.length > 0
@@ -344,6 +343,7 @@ export default class Board {
                 }
                 // This square has a checker for this player.  Get the moves
 
+
             }
         }
     }
@@ -356,7 +356,7 @@ export default class Board {
      * @param {Point} startPoint
      * @returns {Move[]}
      */
-    getOpenMoves(player, startPoint) {
+    getOpenMoves(startPoint, maxDepth = 10) {
         const startSquare = this.getSquare(startPoint)
         // Get the adjascent squares, and look for open ones
         const moves = []
@@ -365,7 +365,7 @@ export default class Board {
             moves.push(new Move(startPoint, point));
         })
 
-        return [...moves, ...this.getJumpMoves([], startSquare, startPoint)]
+        return [...moves, ...this.getJumpMoves([], startSquare, startPoint, maxDepth)]
 
     }
 
@@ -406,7 +406,7 @@ export default class Board {
      * @param {*} depth
      * @returns
      */
-    getJumpMoves(moves, startSquare, startPoint, depth = 0) {
+    getJumpMoves(moves, startSquare, startPoint, maxDepth=10, depth = 0) {
 
         if (Board.isvalidSquare(startPoint) === false) {
             return moves
@@ -417,13 +417,13 @@ export default class Board {
             const m = new Move(startPoint, point)
             if (moves.some(move => move.equals(m) || move.isReverse(m))) {
                 // Looks like we doubled back.  Bail
-                return moves
+                return
             }
             moves.push(m)
 
-            if (depth < 5) {
+            if (depth < maxDepth) {
                 // recursively
-                const nextMoves = this.getJumpMoves(moves, startSquare, point, depth + 1).filter(move => (
+                const nextMoves = this.getJumpMoves(moves, startSquare, point, maxDepth, depth + 1).filter(move => (
                     !moves.some(mm => mm.equals(move))
                 ))
                 moves = [...moves.slice(), ...nextMoves]
