@@ -1,6 +1,5 @@
 import React from "react";
-import clsx from 'clsx'
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@material-ui/styles/makeStyles';
 import { isEven, isOdd } from '../utils'
 import Checker from './Checker'
 import {NUM_SQUARES, borderWidth} from '../constants'
@@ -17,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const BoardSquare = observer((props) => {
+const BoardSquare = observer(function BoardSquare(props){
     const { point, state, selected, onClick } = props
     const {colors} = useStore()
     const classes = useStyles(colors)
@@ -41,7 +40,7 @@ const BoardSquare = observer((props) => {
             onClick={handleClick}
         >
             {(state && state.playable && state.side !== Player.EMPTY) &&
-                <Checker player={state.side} colors={colors.checkerColors()} isKing={state.isKing} svgStyle={svgStyle}/>
+                <Checker player={state.side} isKing={state.isKing} svgStyle={svgStyle}/>
             }
         </div>
 

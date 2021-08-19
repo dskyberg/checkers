@@ -5,7 +5,7 @@ import {headerMargin, NUM_SQUARES, MAX_ROW_COL, borderWidth} from '../constants'
 import Point from '../classes/Point'
 import Move from '../classes/Move'
 
-import { makeStyles } from "@material-ui/core/styles";
+import makeStyles from '@material-ui/styles/makeStyles';
 import BoardSquare from './BoardSquare'
 
 const useStyles = makeStyles((theme) => ({
@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-const BoardView = observer(() => {
+const BoardView = observer(function BoardView(){
     const classes = useStyles()
     const {settings} = useStore()
     const {board, currentPlayer} = settings
@@ -60,6 +60,8 @@ const BoardView = observer(() => {
                 lastPoint = point
                 console.log('Making move:', move)
                 board.makeMove(move)
+                const result = board.evaluate()
+                console.log('result',result)
             })
             setSelected(undefined)
             settings.turnOver()

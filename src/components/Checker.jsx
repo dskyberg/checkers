@@ -1,11 +1,15 @@
 /**
- * Checkers can be white or black and can be king or not king
+ * Checkers can be white or black and can be king or not king.
+ * This is a reactive FC that just paints a simple SVG. The colors are observable
+ * via the Colors store.  The state (isKing, etc) are passed down from the
+ * BoardSquare class.
  *
  */
 import React from 'react'
-
-const viewSize = 128
-const xy = viewSize / 2
+import { observer } from 'mobx-react-lite'
+import { useStore } from '../store'
+import { CHECKER_VIEW_SIZE } from '../constants'
+const xy = CHECKER_VIEW_SIZE / 2
 
 /**
  *
@@ -23,13 +27,12 @@ const findPoint = (cx, cy, rad, cornerGrad) => {
 }
 
 
-
 /**
  *  Calculate start, stop points to draw lines around the edge of the checker
  */
 const rays = () => {
     const rs = []
-    for(let degrees = 0; degrees < 360; degrees += 20){
+    for (let degrees = 0; degrees < 360; degrees += 20) {
         rs.push(
             {
                 start: findPoint(xy, xy, xy, degrees),
@@ -40,7 +43,7 @@ const rays = () => {
     return rs
 }
 
-const KingCrown = ({colorSecondary, colorPrimary}) => {
+const KingCrown = ({ colorSecondary, colorPrimary }) => {
     return (
         <React.Fragment>
             <path
@@ -56,13 +59,14 @@ const KingCrown = ({colorSecondary, colorPrimary}) => {
     )
 }
 
-const Checker = (props) => {
-    const { player, svgStyle, isKing, colors} = props
-    const colorPrimary = colors[player].primary
-    const colorSecondary = colors[player].secondary
+const Checker = observer(function Checker(props) {
+    const { player, svgStyle, isKing } = props
+    const { colors } = useStore()
+    const colorPrimary = colors.checker[player].primary
+    const colorSecondary = colors.checker[player].secondary
 
     return (
-        <svg viewBox="0 0 128 128" style={svgStyle}>
+        <svg viewBox={`0 0 ${CHECKER_VIEW_SIZE} ${CHECKER_VIEW_SIZE}`} style={svgStyle}>
             <circle
                 cx={xy}
                 cy={xy}
@@ -87,8 +91,8 @@ const Checker = (props) => {
                     stroke={colorSecondary}
                 />
             )}
-            {isKing && <KingCrown colorPrimary={colorPrimary} colorSecondary={colorSecondary} /> }
+            {isKing && <KingCrown colorPrimary={colorPrimary} colorSecondary={colorSecondary} />}
         </svg>
     )
-}
+})
 export default Checker

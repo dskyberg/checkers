@@ -1,7 +1,7 @@
 import Player from './Player'
 
 test('toString', () => {
-    expect(() => {new Player()}).toThrow('Player must be either a Player instance, Player.WHITE or Player.BLACK')
+    expect(() => {new Player()}).toThrow('player is undefined')
 })
 
 test('White', () => {

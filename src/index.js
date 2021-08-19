@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, StyledEngineProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
 import App from './App';
@@ -8,14 +8,15 @@ import reportWebVitals from './reportWebVitals';
 import theme from './theme';
 import {StoreProvider} from './store'
 
-
 ReactDOM.render(
-    <ThemeProvider theme={theme}>
-      <CssBaseline/>
-      <StoreProvider >
-        <App />
-      </StoreProvider>
-    </ThemeProvider>,
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={theme}>
+        <CssBaseline/>
+        <StoreProvider >
+          <App />
+        </StoreProvider>
+      </ThemeProvider>
+    </StyledEngineProvider>,
   document.getElementById('root')
 );
 

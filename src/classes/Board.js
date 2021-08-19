@@ -8,7 +8,7 @@
  *
  * It's also true that if m xor n is true, then the square is dark.
  */
-import { inRange, arrayEquals, isEven } from '../utils'
+import { inRange, arrayEquals } from '../utils'
 import { MAX_ROW_COL } from '../constants'
 import Point from './Point'
 import Square from './Square'
@@ -17,44 +17,6 @@ import Move from './Move'
 
 const whiteRows = [0, 1, 2]
 const blackRows = [5, 6, 7]
-
-// Checkers is played on the diagonal black squares. Sin
-const isValidSquare = (point) => inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
-
-const isDarkSquare = (point) => !isEven(point.x + point.y) //xor(isEven(point.y), isEven(point.x))
-
-export const adjacentSquares = (point) => {
-    if (!isDarkSquare(point)) {
-        throw new Error('Not a valid square')
-    }
-    return [
-        new Point(point.x - 1, point.y - 1),
-        new Point(point.x + 1, point.y - 1),
-        new Point(point.x - 1, point.y + 1),
-        new Point(point.x + 1, point.y + 1)
-    ].filter(point => isValidSquare(point))
-}
-
-
-/**
- * Test to see if the direction of the target square is legit for the starting
- * square.  Meaning, Player.WHITE squares go toward the top and Player.BLACK squares
- * go toward the bottom of the board.  Kings go either way
- */
-const isDirectionalSquare = (square, startPoint, point) => {
-    if (square.isKing === false) {
-        // WHITE can only go up
-        if (square.side === Player.WHITE && point.y < startPoint.y) {
-            return false
-        }
-        // BLACK can only go down
-        if (square.side === Player.BLACK && point.y > startPoint.y) {
-            return false
-        }
-    }
-    return true
-
-}
 
 
 /**
@@ -65,45 +27,55 @@ const isDirectionalSquare = (square, startPoint, point) => {
  *  * A clone of another board
  */
 export default class Board {
+    /** @type {Square[]} */
     squares = []
     kings = [0, 0, 0]
     remaining = [0, 12, 12]
 
-    static inRange(point) {
+    /**
+     * Test to see if the point is on the board
+     * @param {Point} point
+     * @returns
+     */
+    static isvalidSquare(point) {
         return inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
     }
 
+    /**
+     * Test to see if the point is on rows 0 or 7
+     * @param {Point} point
+     * @returns
+     */
+    static isKingRow = (point) => point.y === 0 || point.y === 7
+
+
     static minimax(board, depth, side, maximizingPlayer, alpha, beta) {
-        if(depth == 0) {
+        if (depth === 0) {
             return board.calculate(side);
         }
         const possibleMoves = board.getAllValidMoves(side);
 
         let initial = 0.0;
         let tempBoard = null;
-        if(maximizingPlayer)
-        {
+        if (maximizingPlayer) {
             initial = Number.NEGATIVE_INFINITY;
-            for(let i = 0; i < possibleMoves.length; i++)
-            {
+            for (let i = 0; i < possibleMoves.length; i++) {
                 tempBoard = board.clone();
                 tempBoard.makeMove(possibleMoves.get(i), side);
 
-                const result = Board.minimax(tempBoard, depth - 1, Player.OpposingPlayer(side), !maximizingPlayer, alpha, beta);
+                const result = Board.minimax(tempBoard, depth - 1, Player.opposingPlayer(side), !maximizingPlayer, alpha, beta);
 
                 initial = Math.max(result, initial);
                 alpha = Math.max(alpha, initial);
 
-                if(alpha >= beta)
+                if (alpha >= beta)
                     break;
             }
         }
         //minimizing
-        else
-        {
+        else {
             initial = Number.POSITIVE_INFINITY;
-            for(let i = 0; i < possibleMoves.size(); i++)
-            {
+            for (let i = 0; i < possibleMoves.length; i++) {
                 tempBoard = board.clone();
                 tempBoard.makeMove(possibleMoves.get(i), side);
 
@@ -112,7 +84,7 @@ export default class Board {
                 initial = Math.min(result, initial);
                 alpha = Math.min(alpha, initial);
 
-                if(alpha >= beta)
+                if (alpha >= beta)
                     break;
             }
         }
@@ -121,10 +93,10 @@ export default class Board {
     }
 
     constructor(board) {
-        if(board instanceof Board) {
-                this.copyFrom(board)
+        if (board instanceof Board) {
+            this.copyFrom(board)
         }
-        else if(Array.isArray(board) && board.length === 0) {
+        else if (Array.isArray(board) && board.length === 0) {
             this.emptyBoard()
         }
         // If no template is provided, create a standard setup
@@ -140,6 +112,7 @@ export default class Board {
      * @returns {Board} this instance
      */
     emptyBoard() {
+        /** @type {Square[]} */
         this.squares = []
         this.kings = [0, 0, 0]
         this.remaining = [0, 0, 0]
@@ -148,11 +121,11 @@ export default class Board {
             this.squares.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
                 const point = new Point(col, row)
-                if (!isDarkSquare(point)) {
-                    this.squares[row].push(Square.makeNonPlayable(point))
+                if (!Square.isDark(point)) {
+                    this.squares[row][col] = Square.makeNonPlayable(point)
                 }
                 else {
-                    this.squares[row].push(Square.makeEmpty(point))
+                    this.squares[row][col] = Square.makeEmpty(point)
                 }
             }
         }
@@ -166,6 +139,7 @@ export default class Board {
      * @returns {Board} returns this instance
      */
     resetBoard() {
+        /** @type {Square[]} */
         this.squares = []
         this.kings = [0, 0, 0]
         this.remaining = [0, 12, 12]
@@ -174,17 +148,17 @@ export default class Board {
             this.squares.push([])
             for (let col = 0; col < MAX_ROW_COL; col++) {
                 const point = new Point(col, row)
-                if (!isDarkSquare(point)) {
-                    this.squares[row].push(Square.makeNonPlayable(point))
+                if (!Square.isDark(point)) {
+                    this.squares[row][col] = Square.makeNonPlayable(point)
                 }
                 else if (blackRows.includes(row)) {
-                    this.squares[row].push(Square.makeBlack(point))
+                    this.squares[row][col] = Square.makeBlack(point)
                 }
                 else if (whiteRows.includes(row)) {
-                    this.squares[row].push(Square.makeWhite(point))
+                    this.squares[row][col] = Square.makeWhite(point)
                 }
                 else {
-                    this.squares[row].push(Square.makeEmpty(point))
+                    this.squares[row][col] = Square.makeEmpty(point)
                 }
             }
         }
@@ -203,7 +177,7 @@ export default class Board {
 
         this.kings = board.kings.slice()
         this.remaining = board.remaining.slice()
-        this.squares = board.squares.map(row => row.slice())
+        this.squares = board.squares.map(row => (row.map(square => square.clone())))
         return this
     }
 
@@ -238,6 +212,7 @@ export default class Board {
 
     /**
      * Only called by Board.calculate
+     *
      * @param {number} side The side to calculate (either Payer.WHITE or Player.BLACk)
      * @returns {number} The calculated vaue
      */
@@ -246,13 +221,66 @@ export default class Board {
     }
 
     /**
-     * Determine the game state.  Is it at a win, loss, draw yet?
+     * @typedef GameResult
+     * @type {object}
+     * @property {number[]} moves The count of available moves per player
+     * @property {string} outcome The current state
+     *
      */
-    evaluate(side) {
 
+    /**
+     * Determine the game state.  Is it at a win, loss, draw yet? This should be
+     * called after every move, to determine potential end state
+     *
+     * @returns {GameResult}
+     */
+    evaluate() {
+        const result = {
+            moves: [undefined, 0, 0],
+            outcome: 'continue'
+        }
+        // See if the game is already over
+
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const point = new Point(col, row)
+                const square = this.getSquare(point)
+                if (square.side === Player.EMPTY) {
+                    continue
+                }
+                const opens = this.getOpenSquares(square)
+                if (opens.length > 0) {
+                    result.moves[square.side] += opens.length
+                }
+                const jumps = this.getJumpSquares(square, point)
+                if (jumps.length > 0) {
+                    result.moves[square.side] += jumps.length
+                }
+            }
+        }
+        if (result.moves[Player.WHITE] === 0) {
+            if (result.moves[Player.WHITE] !== 0) {
+                result.outcome = 'White is out of moves. Black wins!'
+            }
+            else {
+                result.outcome = "No more moves!"
+            }
+        }
+        if (result.moves[Player.BLACK] === 0) {
+            if (result.moves[Player.BLACK] !== 0) {
+                result.outcome = 'Black is out of moves. White wins!'
+            }
+            else {
+                result.outcome = "No more moves!"
+            }
+        }
+        return result
     }
+
+
     /**
      * Return true if the square contains a checker for the current player
+     *
      * @param {Player} player - Player to test the square against
      * @param {Point} point - the location of the square to test
      * @returns {boolean} true if the square matches the player side
@@ -262,6 +290,13 @@ export default class Board {
     }
 
 
+    /**
+     * Is the checker at the point an opponent's piece?
+     *
+     * @param {Player} player The asking player
+     * @param {Point} point  The point to evaluate
+     * @returns {boolean} True if is opposing. Else false
+     */
     isOpponentChecker(player, point) {
         const square = this.getSquare(point)
         if (player.side === Player.WHITE && square.side === Player.BLACK) {
@@ -274,39 +309,90 @@ export default class Board {
     }
 
     /**
+     * Do the two points represent a valid potential move for the player?
      * For expediency, we will assume that the starting square has ben verified
+     *
+     * @param {Player} player
+     * @param {Point} startPoint
+     * @param {Point} endPoint
+     * @returns {boolean}
      */
     isValidMove(player, startPoint, endPoint) {
         const moves = this.getOpenMoves(player, startPoint)
-        const ms = moves.filter(move => move.contains(endPoint))
+        const move = new Move(startPoint, endPoint)
+        //const ms = moves.filter(move => move.contains(endPoint))
+        const ms = moves.filter(m => m.equals(move))
         return ms.length > 0
     }
 
+    /**
+ * Get all the open moves for this player
+ *
+ * @param {Player} player
+ * @return {Move[]}
+ */
+    getPlayerMoves(player) {
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const point = new Point(col, row)
+                if (!Square.isDark(point)) {
+                    continue
+                }
+                const square = this.getSquare(point)
+                if (square.side !== player.side) {
+                    continue
+                }
+                // This square has a checker for this player.  Get the moves
 
+            }
+        }
+    }
+
+
+    /**
+     * returns a set of valid potential moves for the piece at the given point.
+     *
+     * @param {Player} player
+     * @param {Point} startPoint
+     * @returns {Move[]}
+     */
     getOpenMoves(player, startPoint) {
         const startSquare = this.getSquare(startPoint)
         // Get the adjascent squares, and look for open ones
-        const availableSquares = adjacentSquares(startPoint)
         const moves = []
-        availableSquares.forEach(point => {
-            // filter for directionality
-            if (!isDirectionalSquare(startSquare, startPoint, point)) {
-                return
-            }
-
-            // Filter for open squares
-            let square = this.getSquare(point)
-            if (square.side === Player.EMPTY) {
-                moves.push(new Move(startPoint, point));
-                return
-            }
-            if (square.side === startSquare.side) {
-                return
-            }
+        const adjacents = this.getOpenSquares(startSquare)
+        adjacents.forEach(point => {
+            moves.push(new Move(startPoint, point));
         })
 
         return [...moves, ...this.getJumpMoves([], startSquare, startPoint)]
 
+    }
+
+    /**
+     * Find the open squares avalable for the piece at this point.  Calls
+     * adjacentSquares, and filters for those that represent appropriate moves
+     * (only kings can go backward) to empty squares
+     *
+     * @param {Square} square
+     * @returns {Point[]} Valid adjacent points
+     */
+    getOpenSquares(square) {
+        const points = []
+
+        if (square.side === Player.EMPTY) {
+            return points
+        }
+
+        const possible_points = square.getAdjacent()
+        return possible_points.filter(point => {
+            // filter for directionality
+            if (square.isDirectional(point) &&
+                this.getSquare(point).side === Player.EMPTY) {
+                return true
+            }
+            return false
+        })
     }
 
     /**
@@ -322,7 +408,7 @@ export default class Board {
      */
     getJumpMoves(moves, startSquare, startPoint, depth = 0) {
 
-        if (Board.inRange(startPoint) === false) {
+        if (Board.isvalidSquare(startPoint) === false) {
             return moves
         }
 
@@ -349,8 +435,8 @@ export default class Board {
     /**
      *
      * @param {Square} square the starting square
-     * @param {*} point
-     * @returns
+     * @param {Point} point
+     * @returns Point[] Set of potential jumpts from the point
      */
     getJumpSquares(square, point) {
         const points = [] // Possible points
@@ -364,12 +450,18 @@ export default class Board {
             points.push(new Point(point.x - 2, point.y - 2))
         }
         return points.filter(p => (
-            Board.inRange(p) &&
+            Board.isvalidSquare(p) &&
             this.getSquare(p).side === Player.EMPTY &&
             this.isOpponentChecker(square, new Move(point, p).findMiddle())
         ))
     }
 
+    /**
+     * Move's a piece on the board.  If the move is a jump, then the jumped piece
+     * is also removed.
+     *
+     * @param {Move} move  The move to make
+     */
     makeMove(move) {
         const middle = move.findMiddle()
         // If there's a middle square, then this is a jump move.  Remove the piece
@@ -381,35 +473,44 @@ export default class Board {
 
 
     /***
-     * get the square by row, col
+     * Get the square by row, col.  The row and col must be valid.
+     *
      * @param {Point} point
-     * @returns {Square} square at point p
+     * @returns {Square} square at the provided point
      */
     getSquare(point) {
         Point.isPoint(point)
         return this.squares[point.y][point.x]
     }
 
-    setSquare(point, side, isKing = false) {
-        Point.isPoint(point)
-        const square = this.getSquare(point)
-        square.side = side
-        square.isKing = isKing
-        this.remaining[side] += 1
-        if (isKing) {
-            this.kings[side] += 1
-        }
-    }
+    setSquare(square) {
 
-    moveSquare(startPoint, endPoint) {
-
-        this.squares[endPoint.y][endPoint.x] = this.getSquare(startPoint).clone().move(endPoint)
-        this.squares[startPoint.y][startPoint.x] = Square.makeEmpty(startPoint)
-        const square = this.getSquare(endPoint)
-        if ((endPoint.y === 0 || endPoint.y === MAX_ROW_COL - 1) && !square.isKing) {
-            square.isKing = true
+        this.squares[square.point.y][square.point.x] = square
+        this.remaining[square.side] += 1
+        if (square.isKing) {
             this.kings[square.side] += 1
+        }
 
+    }
+    /**
+     * Move the square at startPoint to endPoint.  This will also obviously make
+     * the endpoint enpty
+     *
+     * @param {Point} startPoint - Where moving from
+     * @param {Point} endPoint - Where moving to
+     */
+    moveSquare(startPoint, endPoint) {
+        const startSquare = this.getSquare(startPoint)
+
+        // Grab some info about whether or not this piece is becoming a king
+        const becomingKing = !startSquare.isKing && Board.isKingRow(endPoint)
+        const isKing = becomingKing ? true : startSquare.isKing
+
+        this.squares[endPoint.y][endPoint.x] = startSquare.move(endPoint, isKing)
+        this.squares[startPoint.y][startPoint.x] = Square.makeEmpty(startPoint)
+
+        if (becomingKing) {
+            this.kings[startSquare.side] += 1
         }
     }
 

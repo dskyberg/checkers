@@ -1,5 +1,16 @@
+/**
+ * All the game colors, for enabling players to choose their own colors.
+ * There are colors for the board itself, which includes light, dark, and
+ * selected squares.  There are primary and secondary colors for white and
+ * black checkers.
+ */
 import { action, makeObservable, observable, toJS } from "mobx"
-import { red, pink, purple, deepPurple, indigo, blue, lightBlue, cyan, teal, green, lightGreen, lime, yellow, amber, orange, deepOrange, brown, grey, blueGrey } from '@material-ui/core/colors'
+import {
+    red, pink, purple, deepPurple,
+    indigo, blue, lightBlue, cyan, teal,
+    green, lightGreen, lime, yellow, amber,
+    orange, deepOrange, brown, grey
+} from '@material-ui/core/colors'
 
 export default class Colors {
 
@@ -79,26 +90,26 @@ export default class Colors {
         localStorage.setItem('board-colors', txt)
     }
     getColor(id) {
-         if(Colors.LIGHT_SQUARE){return this.lightSquare}
-         else if(Colors.DARK_SQUARE){return this.darkSquare}
-         else if(Colors.SELECTED_SQUARE){return this.selectedSquare}
-         else if(Colors.WHITE_CHECKER_PRIMARY){return this.checker[2].primary}
-         else if(Colors.WHITE_CHECKER_SECONDARY){return this.checker[2].secondary}
-         else if(Colors.BLACK_CHECKER_PRIMARY){return this.checker[1].primary}
-         else if(Colors.BLACK_CHECKER_SECONDARY){return this.checker[1].secondary}
-        else { throw new Error(`Bad color id: ${id}`)}
+        if (Colors.LIGHT_SQUARE) { return this.lightSquare }
+        else if (Colors.DARK_SQUARE) { return this.darkSquare }
+        else if (Colors.SELECTED_SQUARE) { return this.selectedSquare }
+        else if (Colors.WHITE_CHECKER_PRIMARY) { return this.checker[2].primary }
+        else if (Colors.WHITE_CHECKER_SECONDARY) { return this.checker[2].secondary }
+        else if (Colors.BLACK_CHECKER_PRIMARY) { return this.checker[1].primary }
+        else if (Colors.BLACK_CHECKER_SECONDARY) { return this.checker[1].secondary }
+        else { throw new Error(`Bad color id: ${id}`) }
     }
 
     setColor(id, hex) {
-        if(id === Colors.LIGHT_SQUARE){this.lightSquare = hex}
-        else if(id === Colors.DARK_SQUARE){ this.darkSquare = hex}
-        else if(id === Colors.SELECTED_SQUARE){ this.selectedSquare = hex}
-        else if(id === Colors.WHITE_CHECKER_PRIMARY){ this.checker[2].primary = hex}
-        else if(id === Colors.WHITE_CHECKER_SECONDARY){ this.checker[2].secondary = hex}
-        else if(id === Colors.BLACK_CHECKER_PRIMARY){ this.checker[1].primary = hex}
-        else if(id === Colors.BLACK_CHECKER_SECONDARY){ this.checker[1].secondary = hex}
-       else { throw new Error(`Bad color id: ${id}`)}
-   }
+        if (id === Colors.LIGHT_SQUARE) { this.lightSquare = hex }
+        else if (id === Colors.DARK_SQUARE) { this.darkSquare = hex }
+        else if (id === Colors.SELECTED_SQUARE) { this.selectedSquare = hex }
+        else if (id === Colors.WHITE_CHECKER_PRIMARY) { this.checker[2].primary = hex }
+        else if (id === Colors.WHITE_CHECKER_SECONDARY) { this.checker[2].secondary = hex }
+        else if (id === Colors.BLACK_CHECKER_PRIMARY) { this.checker[1].primary = hex }
+        else if (id === Colors.BLACK_CHECKER_SECONDARY) { this.checker[1].secondary = hex }
+        else { throw new Error(`Bad color id: ${id}`) }
+    }
 
     setLightSquare(color) {
         this.lightSquare = color

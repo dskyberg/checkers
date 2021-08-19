@@ -1,20 +1,22 @@
 import React from 'react'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '../store'
-import { SwatchesPicker } from 'react-color'
+import Player from '../classes/Player'
+import Colors from '../store/Colors'
+
+import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog';
-import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button'
+import makeStyles from '@material-ui/styles/makeStyles';
+import FormGroup from '@material-ui/core/FormGroup'
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import FormGroup from '@material-ui/core/FormGroup'
-import Player from '../classes/Player'
-import Colors from '../store/Colors'
+import Button from '@material-ui/core/Button'
+import { SwatchesPicker } from 'react-color'
+
 
 const useStyles = makeStyles({
   form: {
@@ -50,7 +52,7 @@ const COLOR_BUTTON_ID = {
   [Colors.BLACK_CHECKER_SECONDARY]: "black-checker-secondary-color"
 }
 
-const NewGameDialog = observer((props) => {
+const NewGameDialog = observer(function NewGameDialog(props){
   const classes = useStyles();
   const [selectedColor, setSelectedColor] = React.useState(Colors.NONE)
   const { settings, colors } = useStore()
@@ -102,7 +104,7 @@ const NewGameDialog = observer((props) => {
   if (!settings.openDialog) {
     return null;
   }
-  console.log('selected color:', selectedColor)
+
   return (
     <Dialog fullWidth={true} maxWidth="sm" onClose={handleClose} aria-labelledby="simple-dialog-title" open={settings.openDialog}>
       <DialogTitle id="simple-dialog-title">Start a new game</DialogTitle>
