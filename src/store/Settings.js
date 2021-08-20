@@ -36,7 +36,8 @@ export default class Settings {
             setOpenDialog: action,
             setOpenColorPicker: action,
             setBanner: action,
-            setSelected: action,
+            addSelected: action,
+            clearSelected: action,
             turnOver: action,
             reset: action,
         })
@@ -98,13 +99,23 @@ export default class Settings {
         this.banner = val
     }
 
-    setSelected(point) {
+    addSelected(point) {
+        if(this.selected === undefined){
+            this.selected = [point]
+        }
+        else {
+            this.selected = [...this.selected, point]
+        }
+    }
 
+    clearSelected(){
+        this.selected = undefined
     }
 
     turnOver() {
         this.currentPlayer = this.currentPlayer.side === Player.WHITE ? this.playerBlack : this.playerWhite
         this.round += 1
+        this.selected = undefined
         this.setBanner(`${SIDE_NAME[this.currentPlayer.side]}'s turn`)
     }
 
@@ -114,6 +125,7 @@ export default class Settings {
         this.playerBlack = new Player(Player.BLACK)
         this.currentPlayer = this.starting === 0 ? this.playerWhite : this.playerBlack
         this.round = 1
+        this.selected = undefined
         this.setBanner(`${SIDE_NAME[this.currentPlayer.side]}'s turn`)
 
     }

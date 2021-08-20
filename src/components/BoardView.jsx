@@ -26,8 +26,7 @@ const useStyles = makeStyles((theme) => ({
 const BoardView = observer(function BoardView(){
     const classes = useStyles()
     const {settings} = useStore()
-    const {board, currentPlayer} = settings
-    const [selected, setSelected] = React.useState()
+    const {board, selected, currentPlayer} = settings
 
 
     const handleSquareClick = (point) => {
@@ -39,13 +38,13 @@ const BoardView = observer(function BoardView(){
         if(selected === undefined || selected === null) {
             // Nothing selected yet. Pick a checker
             if(board.isPlayerChecker(currentPlayer, point)) {
-                setSelected([point])
+                settings.addSelected(point)
             }
         }
 
         // If the starting checker is clicked again, clear the selection
         else if(point.equals(selected[0])) {
-            setSelected(undefined)
+            settings.clearSelected(undefined)
         }
 
         // If this is the last selected square, then commit the move
@@ -63,13 +62,12 @@ const BoardView = observer(function BoardView(){
                 const result = board.evaluate()
                 console.log('result',result)
             })
-            setSelected(undefined)
+            settings.clearSelected()
             settings.turnOver()
         }
         // Is the user adding a jump?
-        else if(board.isValidMove(currentPlayer, selected[0], point)) {
-            const newSelected = [...selected, point]
-            setSelected(newSelected)
+        else if(board.isValidMove(currentPlayer, new Move(selected[0], point))) {
+            settings.addSelected(point)
         }
     }
 
