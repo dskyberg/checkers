@@ -1,4 +1,4 @@
-import { inRange } from './inRange'
+import { inRange } from '../inRange'
 
 test('in bound', () => {
     // now we have the original implementation,

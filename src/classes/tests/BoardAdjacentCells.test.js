@@ -1,6 +1,6 @@
-import {adjacentSquares} from './Board'
-import Point from './Point'
-import Square from './Square'
+import {adjacentSquares} from '../Board'
+import Point from '../Point'
+import Square from '../Square'
 
 // Square isn't playale
 const upperLeft = new Square(new Point(0,0))

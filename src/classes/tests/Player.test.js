@@ -1,4 +1,4 @@
-import Player from './Player'
+import Player from '../Player'
 
 test('toString', () => {
     expect(() => {new Player()}).toThrow('player is undefined')

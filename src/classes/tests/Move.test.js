@@ -1,5 +1,5 @@
-import Move from './Move'
-import Point from './Point'
+import Move from '../Move'
+import Point from '../Point'
 
 test('no start in constructor', () => {
 

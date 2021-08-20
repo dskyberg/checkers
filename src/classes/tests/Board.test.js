@@ -1,8 +1,8 @@
-import Point from './Point'
-import Player from './Player'
-import Board from './Board'
-import Square from './Square'
-import Move from './Move'
+import Point from '../Point'
+import Player from '../Player'
+import Board from '../Board'
+import Square from '../Square'
+import Move from '../Move'
 
 const NOT_A_KING = false
 const IS_A_KING = true
