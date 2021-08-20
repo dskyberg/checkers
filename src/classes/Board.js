@@ -330,7 +330,8 @@ export default class Board {
  * @param {Player} player
  * @return {Move[]}
  */
-    getPlayerMoves(player) {
+    getAllPlayerMoves(player) {
+        let moves = []
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 const point = new Point(col, row)
@@ -342,17 +343,16 @@ export default class Board {
                     continue
                 }
                 // This square has a checker for this player.  Get the moves
-
-
+                moves = [...moves, ...this.getOpenMoves(point, 0)]
             }
         }
+        return moves
     }
 
 
     /**
      * returns a set of valid potential moves for the piece at the given point.
      *
-     * @param {Player} player
      * @param {Point} startPoint
      * @returns {Move[]}
      */
