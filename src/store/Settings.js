@@ -1,4 +1,5 @@
 import { action, makeObservable, observable } from "mobx"
+import { randomInt } from '../utils'
 import Board from '../classes/Board'
 import Player from '../classes/Player'
 import {SIDE_NAME} from '../classes/Player'
@@ -40,6 +41,7 @@ export default class Settings {
             clearSelected: action,
             turnOver: action,
             reset: action,
+            makeComputerMove: action,
         })
         this.getStorage()
     }
@@ -128,5 +130,63 @@ export default class Settings {
         this.selected = undefined
         this.setBanner(`${SIDE_NAME[this.currentPlayer.side]}'s turn`)
 
+    }
+    //TODO: Figure out where to put this.  Should it be a class attribute?
+    skippingPoint = null
+
+    makeComputerMove() {
+        const m = this.minimaxStart(this.board, this.depth, this.currentPlayer, true);
+        const decision = this.board.makeMove(m, this.currentPlayer);
+        if(decision === Board.Decision.ADDITIONAL_MOVE)
+            this.skippingPoint = m.end
+
+        //System.out.println("Pruned tree: " + pruned + " times");
+        return decision;
+
+    }
+
+    minimaxStart(board, depth, side, maximizingPlayer)
+    {
+        const alpha = Number.NEGATIVE_INFINITY
+        const beta = Number.POSITIVE_INFINITY
+
+        let possibleMoves = []
+        if(this.skippingPoint == null)
+            possibleMoves = board.getAllPlayerMoves(side);
+        else
+        {
+            possibleMoves = board.getJumpMoves([], board.getSquare(this.skippingPoint), this.skippingPoint)
+            this.skippingPoint = null;
+        }
+        //System.out.println("side: " + side + " " + possibleMoves.size());
+
+        let heuristics = []
+        if(possibleMoves.length === 0)
+            return null;
+        let tempBoard = null;
+        for(let i = 0; i < possibleMoves.length; i++)
+        {
+            tempBoard = board.clone();
+            tempBoard.makeMove(possibleMoves[i], side);
+            heuristics.push(this.minimax(tempBoard, depth - 1, Player.OpposingPlayer(side), !maximizingPlayer, alpha, beta));
+        }
+        //System.out.println("\nMinimax at depth: " + depth + "\n" + heuristics);
+
+        let maxHeuristics = Number.NEGATIVE_INFINITY;
+
+        for(let i = heuristics.length - 1; i >= 0; i--) {
+            if (heuristics[i] >= maxHeuristics) {
+                maxHeuristics = heuristics[i];
+            }
+        }
+
+        possibleMoves = possibleMoves.filter((val, i) => heuristics[i] >= maxHeuristics)
+        heuristics = heuristics.filter(val => val >= maxHeuristics)
+        // If possibleMoves has more than 1, randomly select one
+        return possibleMoves.get(randomInt(possibleMoves.length));
+    }
+
+    minimax() {
+        return
     }
 }

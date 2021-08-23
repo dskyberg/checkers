@@ -319,8 +319,8 @@ export default class Board {
      */
     isValidMove(player, move) {
         const moves = this.getOpenMoves(move.start)
-        //const ms = moves.filter(move => move.contains(endPoint))
-        const ms = moves.filter(m => m.equals(move))
+        const ms = moves.filter(m => move.contains(m.end))
+        //const ms = moves.filter(m => m.equals(move))
         return ms.length > 0
     }
 
