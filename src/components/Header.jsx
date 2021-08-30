@@ -25,6 +25,12 @@ const Header = observer(function Header() {
     settings.setOpenDialog(true);
   };
 
+  const handleBannerClick = () => {
+    if(settings.superUser) {
+      settings.turnOver()
+    }
+  }
+
   return (
     <AppBar>
       <Toolbar>
@@ -33,7 +39,7 @@ const Header = observer(function Header() {
           <Typography variant="subtitle2">White Kings: {settings.board.kings[PLayer.WHITE]}</Typography>
           <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.WHITE)}</Typography>
         </Box>
-        <Typography variant="h6" className={classes.title}>
+        <Typography variant="h6" className={classes.title} onClick={handleBannerClick}>
           {settings.banner}
         </Typography>
         <Box className={classes.title} flexDirection="column">

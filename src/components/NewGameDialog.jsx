@@ -82,6 +82,11 @@ const NewGameDialog = observer(function NewGameDialog(props){
     colors.setColor(selectedColor, hex)
   }
 
+  const handleSuperUser = () => {
+    settings.toggleSuperUser()
+    settings.setOpenDialog(false);
+  }
+
   const handleClick = (id) => {
 
     if (selectedColor === Colors.NONE) {
@@ -95,11 +100,10 @@ const NewGameDialog = observer(function NewGameDialog(props){
       settings.setOpenColorPicker(false)
     }
     else {
-      console.log('changing selected color to', id)
+      console.log('changing selected color to', id, colors.getColor(id))
       setSelectedColor(id)
     }
   }
-
 
   if (!settings.openDialog) {
     return null;
@@ -206,6 +210,9 @@ const NewGameDialog = observer(function NewGameDialog(props){
 
       </DialogContent>
       <DialogActions>
+        <Button onClick={handleSuperUser} color="secondary">
+          {settings.superUser ? "Disable Super User" : "Enable Super User"}
+        </Button>
         <Button onClick={handleReset} color="secondary">
           Reset to factory default
         </Button>

@@ -26,14 +26,25 @@ const useStyles = makeStyles((theme) => ({
 const BoardView = observer(function BoardView(){
     const classes = useStyles()
     const {settings} = useStore()
-    const {board, selected, currentPlayer} = settings
+    const {board, selected, currentPlayer, superUser} = settings
 
 
     const handleSquareClick = (point) => {
         manageSelections(point)
     }
 
+    const handleSuperUser = (point) => {
+        settings.addSelected(point)
+        settings.setOpenSuperUserDialog(true)
+    }
+
     const manageSelections = (point) => {
+        // If superUser mode is on, just do that
+        if(superUser) {
+            handleSuperUser(point)
+            return
+        }
+
         // Is this the beginning of a move?
         if(selected === undefined || selected === null) {
             // Nothing selected yet. Pick a checker

@@ -7,6 +7,7 @@ import Box from "@material-ui/core/Box";
 import Header from './components/Header'
 import BoardView from './components/BoardView'
 import NewGameDialog from './components/NewGameDialog'
+import SuperUserDialog from './components/SuperUserDialog'
 
 
 const useStyles = makeStyles((theme) => ({
@@ -33,8 +34,7 @@ const App = observer(function App(props) {
   const {settings} = useStore();
 
   const handleDialogClose = () => {
-    console.log('Resetting')
-    settings.reset()
+     settings.reset()
   }
 
   /**
@@ -56,6 +56,7 @@ const App = observer(function App(props) {
           </Box>
         </Container>
        <NewGameDialog onClose={handleDialogClose} />
+       <SuperUserDialog />
     </React.Fragment>
   );
 });

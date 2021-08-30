@@ -49,49 +49,6 @@ export default class Board {
     static isKingRow = (point) => point.y === 0 || point.y === 7
 
 
-    static minimax(board, depth, side, maximizingPlayer, alpha, beta) {
-        if (depth === 0) {
-            return board.calculate(side);
-        }
-        const possibleMoves = board.getAllValidMoves(side);
-
-        let initial = 0.0;
-        let tempBoard = null;
-        if (maximizingPlayer) {
-            initial = Number.NEGATIVE_INFINITY;
-            for (let i = 0; i < possibleMoves.length; i++) {
-                tempBoard = board.clone();
-                tempBoard.makeMove(possibleMoves.get(i), side);
-
-                const result = Board.minimax(tempBoard, depth - 1, Player.opposingPlayer(side), !maximizingPlayer, alpha, beta);
-
-                initial = Math.max(result, initial);
-                alpha = Math.max(alpha, initial);
-
-                if (alpha >= beta)
-                    break;
-            }
-        }
-        //minimizing
-        else {
-            initial = Number.POSITIVE_INFINITY;
-            for (let i = 0; i < possibleMoves.length; i++) {
-                tempBoard = board.clone();
-                tempBoard.makeMove(possibleMoves.get(i), side);
-
-                const result = Board.minimax(tempBoard, depth - 1, Player.OpposingPlayer(side), !maximizingPlayer, alpha, beta);
-
-                initial = Math.min(result, initial);
-                alpha = Math.min(alpha, initial);
-
-                if (alpha >= beta)
-                    break;
-            }
-        }
-
-        return initial;
-    }
-
     constructor(board) {
         if (board instanceof Board) {
             this.copyFrom(board)
@@ -297,12 +254,9 @@ export default class Board {
      * @param {Point} point  The point to evaluate
      * @returns {boolean} True if is opposing. Else false
      */
-    isOpponentChecker(player, point) {
+    isOpponentChecker(startingSquare, point) {
         const square = this.getSquare(point)
-        if (player.side === Player.WHITE && square.side === Player.BLACK) {
-            return true
-        }
-        if (player.side === Player.BLACK && square.side === Player.WHITE) {
+        if( Player.OpposingPlayer(startingSquare.side) === square.side) {
             return true
         }
         return false
@@ -320,7 +274,7 @@ export default class Board {
     isValidMove(player, move) {
         const moves = this.getOpenMoves(move.start)
         const ms = moves.filter(m => move.contains(m.end))
-        //const ms = moves.filter(m => m.equals(move))
+        //const ms = moves.filter(m => move.equals(m))
         return ms.length > 0
     }
 
@@ -433,10 +387,13 @@ export default class Board {
     }
 
     /**
+     * Get all of the potential jumps from the provided point. A valid jump square is
+     * defined as being an empty square that is +/- 2 rows and +/- 2 cols from
+     * the point, and containing an opposing checker in the middle.
      *
      * @param {Square} square the starting square
      * @param {Point} point
-     * @returns Point[] Set of potential jumpts from the point
+     * @returns Point[] t
      */
     getJumpSquares(square, point) {
         const points = [] // Possible points

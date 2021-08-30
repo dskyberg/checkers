@@ -8,30 +8,19 @@ export default class Move {
      * @param {Point} end
      */
     constructor(start, end) {
-        if (start === undefined) {
-            // oops
-            throw new Error('Move requires either points or a Move instance')
+        if (start === undefined || !(start instanceof Point) || !(end instanceof Point)) {
+            throw new Error('Move requires two points')
         }
-        if (start instanceof Move) {
-            this.start = start.start
-            this.end = start.end
-        }
-        else if (start instanceof Point) {
-            if (end === undefined || !(end instanceof Point)) {
-                throw new Error('Move requires two points')
-            }
-            this.start = start
-            this.end = end
-        }
-        else {
-            throw new Error(`Move requires two Points - ${start.toString()} ${end.toString()}`)
-        }
+
+        this.start = start
+        this.end = end
     }
 
     /**
      * Returns the middle square in a jump move.  A jump move is defined as any
      * move where the end row is +- 2 of the start row
-     * @returns {Poing) middle Point
+     *
+     * @returns {Point) middle Point
      */
     findMiddle() {
         if (this.start.y !== this.end.y + 2 && this.start.y !== this.end.y - 2) {
@@ -50,7 +39,12 @@ export default class Move {
     isReverse(move) {
         return this.start.equals(move.end) && this.end.equals(move.start)
     }
+
     equals(move) {
         return this.start.equals(move.start) && this.end.equals(move.end)
+    }
+
+    clone() {
+        return new Move(this.start.clone(), this.end.clone())
     }
 }

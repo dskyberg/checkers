@@ -12,6 +12,9 @@ const playableSquare = (point) => (isEven(point.y) && isOdd(point.x)) || (isOdd(
 const useStyles = makeStyles((theme) => ({
     root: {
         position: 'absolute',
+        display: 'flex',
+        alignItems: "center",
+        justifyContent: "center"
     },
 }));
 
@@ -23,8 +26,7 @@ const BoardSquare = observer(function BoardSquare(props){
     const playable = playableSquare(point)
     const bgColor = playable === false ? colors.lightSquare : selected === true ? colors.selectedSquare : colors.darkSquare
     const svgStyle = {
-        height: NUM_SQUARES - 10, width: NUM_SQUARES - 10,
-        marginTop: 5, marginLeft: 5,
+        height: NUM_SQUARES - 8 , width: NUM_SQUARES - 8,
         pointerEvents: 'none'
     }
 

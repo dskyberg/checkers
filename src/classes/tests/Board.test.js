@@ -95,14 +95,15 @@ test(`one black king`, () => {
 test(`one white and one black, no kings`, () => {
     const whitePoint = new Point(3, 2)
     const blackPoint = new Point(4, 3)
-    const player = new Player(Player.WHITE)
+    const player = Player.makeWhite()
+    const opponent = Player.makeBlack()
     const expectedMoves = [
         new Move(new Point(3, 2), new Point(2, 3)),
         new Move(new Point(3, 2), new Point(5, 4))
     ]
     const board = new Board([])
-    board.setSquare(new Square(whitePoint, true, Player.WHITE, NOT_A_KING))
-    board.setSquare(new Square(blackPoint, true, Player.BLACK, NOT_A_KING))
+    board.setSquare(new Square(whitePoint, true, player.side, NOT_A_KING))
+    board.setSquare(new Square(blackPoint, true, opponent.side, NOT_A_KING))
     //console.log(board.display())
     const result = board.getOpenMoves(whitePoint)
     //console.log(result)
@@ -112,13 +113,14 @@ test(`one white and one black, no kings`, () => {
 test(`one black single jump, no kings`, () => {
     const blackPoint = new Point(0, 5)
     const whitePoint = new Point(1, 4)
-    const player = new Player(Player.WHITE)
+    const player = Player.makeBlack()
+    const opponent = Player.makeWhite()
     const expectedMoves = [
         new Move(new Point(0, 5), new Point(2, 3))
     ]
     const board = new Board([])
-    board.setSquare(new Square(blackPoint, true, Player.BLACK, NOT_A_KING))
-    board.setSquare(new Square(whitePoint, true, Player.WHITE, NOT_A_KING))
+    board.setSquare(new Square(blackPoint, true, player.side, NOT_A_KING))
+    board.setSquare(new Square(whitePoint, true, opponent.side, NOT_A_KING))
     //console.log(board.display())
     const result = board.getOpenMoves(blackPoint)
     //console.log('result:',result)
@@ -135,14 +137,7 @@ test('triple jump with no king', () => {
     const jumpEnd3 = new Point(7,6)
     const player = new Player(Player.WHITE)
     const opponent = new Player(Player.BLACK)
-    /*
-          [
-        Move { start: Point { x: 1, y: 0 }, end: Point { x: 0, y: 1 } },
-        Move { start: Point { x: 1, y: 0 }, end: Point { x: 3, y: 2 } },
-        Move { start: Point { x: 3, y: 2 }, end: Point { x: 5, y: 4 } },
-        Move { start: Point { x: 5, y: 4 }, end: Point { x: 7, y: 6 } }
-      ]
-      */
+
     const expectedMoves = [
         new Move(whitePoint, new Point(0,1)),
         new Move(whitePoint, jumpEnd1),
@@ -210,12 +205,14 @@ test('copy a board', () => {
     const blackPoint1 = new Point(2, 1)
     const blackPoint2 = new Point(4, 3)
     const blackPoint3 = new Point(6,3)
+    const player = Player.makeWhite()
+    const opponent = Player.makeBlack()
 
     const board = new Board([])
-    board.setSquare(new Square(whitePoint, true, Player.WHITE, IS_A_KING))
-    board.setSquare(new Square(blackPoint1, true, Player.BLACK , NOT_A_KING))
-    board.setSquare(new Square(blackPoint2, true, Player.BLACK, NOT_A_KING))
-    board.setSquare(new Square(blackPoint3, true, Player.BLACK, NOT_A_KING))
+    board.setSquare(new Square(whitePoint, true, player.side, IS_A_KING))
+    board.setSquare(new Square(blackPoint1, true, opponent.side, NOT_A_KING))
+    board.setSquare(new Square(blackPoint2, true, opponent.side, NOT_A_KING))
+    board.setSquare(new Square(blackPoint3, true, opponent.side, NOT_A_KING))
     //console.log(board.display())
 
     const copied = new Board()

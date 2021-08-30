@@ -3,7 +3,7 @@ import Point from '../Point'
 
 test('no start in constructor', () => {
 
-    expect(() => { new Move() }).toThrow('Move requires either points or a Move instance')
+    expect(() => { new Move() }).toThrow('Move requires two points')
 })
 
 test('no end in constructor', () => {
@@ -15,7 +15,7 @@ test('constructor with Move', () => {
     const start = new Point(2, 3)
     const end = new Point(3, 2)
     const m1 = new Move(start, end)
-    const m2 = new Move(m1)
+    const m2 = m1.clone()
     expect(m1.equals(m2)).toEqual(true)
 })
 

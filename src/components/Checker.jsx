@@ -8,8 +8,9 @@
 import React from 'react'
 import { observer } from 'mobx-react-lite'
 import { useStore } from '../store'
-import { CHECKER_VIEW_SIZE } from '../constants'
+import { CHECKER_VIEW_SIZE, CHECKER_STROKE } from '../constants'
 const xy = CHECKER_VIEW_SIZE / 2
+
 
 /**
  *
@@ -35,26 +36,33 @@ const rays = () => {
     for (let degrees = 0; degrees < 360; degrees += 20) {
         rs.push(
             {
-                start: findPoint(xy, xy, xy, degrees),
-                end: findPoint(xy, xy, xy - 20, degrees)
+                start: findPoint(xy, xy, xy - CHECKER_STROKE, degrees),
+                end: findPoint(xy, xy, xy * 0.8 - CHECKER_STROKE, degrees)
             }
         )
     }
     return rs
 }
 
+/**
+ *  Positioning the crown
+ *  arc position (x:40, y:90}, (x:128-40, 90)
+ *
+ * @param {*} param0
+ * @returns
+ */
 const KingCrown = ({ colorSecondary, colorPrimary }) => {
     return (
         <React.Fragment>
             <path
-                d="M40,90 a40,40 0 0,1 48,0 l5,-30 l-15,15 l-14,-40 l-14,40 l-15,-15 z"
+                d="M40,90 q 24,-15  48,0 l5,-30 l-15,10 l-14,-30 l-14,30 l-15,-10 z"
                 strokeWidth={4}
                 stroke={colorSecondary}
                 fill="transparent"
             />
-            <circle cx={35} cy={60} r={8} fill={colorSecondary} />
-            <circle cx={64} cy={35} r={8} fill={colorSecondary} />
-            <circle cx={93} cy={60} r={8} fill={colorSecondary} />
+            <circle cx={32} cy={53} r={6} fill={colorSecondary} />
+            <circle cx={64} cy={33} r={6} fill={colorSecondary} />
+            <circle cx={95} cy={53} r={6} fill={colorSecondary} />
         </React.Fragment>
     )
 }
@@ -66,28 +74,28 @@ const Checker = observer(function Checker(props) {
     const colorSecondary = colors.checker[player].secondary
 
     return (
-        <svg viewBox={`0 0 ${CHECKER_VIEW_SIZE} ${CHECKER_VIEW_SIZE}`} style={svgStyle}>
+        <svg viewBox={`0 0 ${CHECKER_VIEW_SIZE} ${CHECKER_VIEW_SIZE}`} style={svgStyle} xmlns="http://www.w3.org/2000/svg">
             <circle
                 cx={xy}
                 cy={xy}
-                r={xy - 2}
+                r={xy - CHECKER_STROKE}
                 fill={colorPrimary}
                 stroke={colorSecondary}
-                strokeWidth={2}
+                strokeWidth={CHECKER_STROKE}
             />
             <circle
                 cx={xy}
                 cy={xy}
-                r={xy - 20}
+                r={xy * 0.8 - CHECKER_STROKE}
                 stroke={colorSecondary}
                 fill={colorPrimary}
-                strokeWidth={4}
+                strokeWidth={CHECKER_STROKE}
             />
             {rays().map((ray, idx) =>
                 <line key={`ray-${idx}`}
                     x1={ray.start.x} y1={ray.start.y}
                     x2={ray.end.x} y2={ray.end.y}
-                    strokeWidth={4}
+                    strokeWidth={CHECKER_STROKE}
                     stroke={colorSecondary}
                 />
             )}
