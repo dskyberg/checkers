@@ -75,6 +75,8 @@ const BoardView = observer(function BoardView(){
             })
             settings.clearSelected()
             settings.turnOver()
+            settings.makeComputerMove()
+            settings.turnOver()
         }
         // Is the user adding a jump?
         else if(board.isValidMove(currentPlayer, new Move(selected[0], point))) {

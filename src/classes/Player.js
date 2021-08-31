@@ -105,8 +105,9 @@ export default class Player {
         const maximizingPlayer = true
 
         let possibleMoves = []
-        if(this.skippingPoint == null)
-            possibleMoves = board.getAllPlayerMoves(this.side);
+        if(this.skippingPoint == null) {
+            possibleMoves = board.getAllPlayerMoves(this);
+        }
         else
         {
             possibleMoves = board.getJumpMoves([], board.getSquare(this.skippingPoint), this.skippingPoint)
@@ -120,7 +121,7 @@ export default class Player {
             return null;
         let tempBoard = null;
         let maxHeuristic = Number.NEGATIVE_INFINITY
-        for(const move in possibleMoves)
+        for(const move of possibleMoves)
         {
             tempBoard = board.clone();
             tempBoard.makeMove(move);
@@ -133,10 +134,11 @@ export default class Player {
 
         // Now that all possible moves have been calculated, find (set of) best move(s)
         calculatedMoves = calculatedMoves.filter((val, i) => val.heuristic >= maxHeuristic)
-
+        console.log('calculatedMoves:', calculatedMoves)
         // If there is more than 1 possible move, randomly select one
-        const move = calculatedMoves.length === 1 ? calculatedMoves[0] : calculatedMoves.get(randomInt(calculatedMoves.length));
-        board.makeMove(move)
+        const move = calculatedMoves.length === 1 ? calculatedMoves[0] : calculatedMoves[randomInt(calculatedMoves.length)];
+
+        board.makeMove(move.move)
     }
 
 
@@ -156,7 +158,7 @@ export default class Player {
         if (depth === maxDepth) {
             return board.calculate(side);
         }
-        const possibleMoves = board.getAllValidMoves(side);
+        const possibleMoves = board.getAllPlayerMoves(side);
 
         let initial = 0.0;
         let tempBoard = null;

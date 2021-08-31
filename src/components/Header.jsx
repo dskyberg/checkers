@@ -20,6 +20,8 @@ const useStyles = makeStyles(theme => ({
 const Header = observer(function Header() {
   const classes = useStyles()
   const { settings } = useStore()
+  const remaining = settings.board.remaining
+  const kings = settings.board.kings
 
   const handleNewGame = () => {
     settings.setOpenDialog(true);
@@ -35,16 +37,16 @@ const Header = observer(function Header() {
     <AppBar>
       <Toolbar>
         <Box className={classes.title} flexDirection="column">
-          <Typography variant="subtitle2" >Remaining White: {settings.board.remaining[PLayer.WHITE]}</Typography>
-          <Typography variant="subtitle2">White Kings: {settings.board.kings[PLayer.WHITE]}</Typography>
+          <Typography variant="subtitle2" >Remaining White: {remaining[PLayer.WHITE]}</Typography>
+          <Typography variant="subtitle2">White Kings: {kings[PLayer.WHITE]}</Typography>
           <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.WHITE)}</Typography>
         </Box>
         <Typography variant="h6" className={classes.title} onClick={handleBannerClick}>
           {settings.banner}
         </Typography>
         <Box className={classes.title} flexDirection="column">
-          <Typography variant="subtitle2">Remaining Black: {settings.board.remaining[Player.BLACK]}</Typography>
-          <Typography variant="subtitle2">Black Kings: {settings.board.kings[Player.BLACK]}</Typography>
+          <Typography variant="subtitle2">Remaining Black: {remaining[Player.BLACK]}</Typography>
+          <Typography variant="subtitle2">Black Kings: {kings[Player.BLACK]}</Typography>
           <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.BLACK)}</Typography>
         </Box>
         <Button color="inherit" onClick={handleNewGame}>New Game</Button>

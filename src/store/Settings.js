@@ -156,6 +156,7 @@ export default class Settings {
     skippingPoint = null
 
     makeComputerMove() {
+        /*
         const m = this.minimaxStart(this.board, this.depth, this.currentPlayer, true);
         const decision = this.board.makeMove(m, this.currentPlayer);
         if(decision === Board.Decision.ADDITIONAL_MOVE)
@@ -163,6 +164,8 @@ export default class Settings {
 
         //System.out.println("Pruned tree: " + pruned + " times");
         return decision;
+        */
+       this.currentPlayer.makeAIMove(this.board)
     }
 
     setSquare(point, side, isKing ){
