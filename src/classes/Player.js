@@ -23,7 +23,7 @@ export default class Player {
      * @param {number} side - either Player.WHITE or Player.BLACK
      * @returns {number} the opposite of the provided side
      */
-    static OpposingPlayer(side) {
+    static opposingPlayer(side) {
         return side === Player.EMPTY ? 0 : 3 - side
     }
 
@@ -131,13 +131,14 @@ export default class Player {
                 maxHeuristic = heuristic
             }
         }
+        console.log('maxHeuristic:', maxHeuristic)
+        console.log('calculatedMoves', calculatedMoves)
 
         // Now that all possible moves have been calculated, find (set of) best move(s)
         calculatedMoves = calculatedMoves.filter((val, i) => val.heuristic >= maxHeuristic)
-        console.log('calculatedMoves:', calculatedMoves)
         // If there is more than 1 possible move, randomly select one
         const move = calculatedMoves.length === 1 ? calculatedMoves[0] : calculatedMoves[randomInt(calculatedMoves.length)];
-
+        console.log('making move:',move)
         board.makeMove(move.move)
     }
 
@@ -154,45 +155,51 @@ export default class Player {
      * @param {number} [maxDepth=10]
      * @returns
      */
-    minimax(board, side, maximizingPlayer, alpha, beta, depth = 0, maxDepth = 10) {
+    minimax(board, side, maximizingPlayer, alpha, beta, depth = 0, maxDepth = 4) {
         if (depth === maxDepth) {
-            return board.calculate(side);
+            const x = board.calculate(side)
+            //console.log(`At depth for ${SIDE_NAME[side]}, ${maximizingPlayer?'maximizing':'!maximizing'}:`, x)
+            return x
         }
+
         const possibleMoves = board.getAllPlayerMoves(side);
 
-        let initial = 0.0;
+        let initial = 0;
         let tempBoard = null;
         if (maximizingPlayer) {
             initial = Number.NEGATIVE_INFINITY;
-            for (const move in possibleMoves) {
+            for (const move of possibleMoves) {
                 tempBoard = board.clone();
                 tempBoard.makeMove(move);
-                const result = this.minimax(tempBoard, this.opposing(), !maximizingPlayer, alpha, beta, depth + 1, maxDepth);
+                const result = this.minimax(tempBoard, Player.opposingPlayer(side), !maximizingPlayer, alpha, beta, depth + 1, maxDepth);
                 initial = Math.max(result, initial);
                 alpha = Math.max(alpha, initial);
 
-                if (alpha >= beta)
+                if (alpha >= beta) {
+                    console.log('minimax - alpha is gte than beta')
                     break;
+                }
             }
         }
         //minimizing
         else {
             initial = Number.POSITIVE_INFINITY;
-            for (const move in possibleMoves) {
+            for (const move of possibleMoves) {
                 tempBoard = board.clone();
                 tempBoard.makeMove(move);
 
-                const result = this.minimax(tempBoard, Player.opposing(), !maximizingPlayer, alpha, beta, depth + 1, maxDepth);
+                const result = this.minimax(tempBoard, Player.opposingPlayer(side), !maximizingPlayer, alpha, beta, depth + 1, maxDepth);
 
                 initial = Math.min(result, initial);
                 alpha = Math.min(alpha, initial);
 
-                if (alpha >= beta)
+                if (alpha >= beta) {
+                    console.log('minimax - alpha is gte than beta')
                     break;
+                }
             }
         }
 
         return initial;
     }
-
 }

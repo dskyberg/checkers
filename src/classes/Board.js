@@ -168,13 +168,15 @@ export default class Board {
     }
 
     /**
+     * 1 point for every regular piece and 1.2 points for every king.
+     *
      * Only called by Board.calculate
      *
      * @param {number} side The side to calculate (either Payer.WHITE or Player.BLACk)
      * @returns {number} The calculated vaue
      */
     calculateSide(side) {
-        return this.kings[side] * 1.2 + this.remaining[side]
+        return this.kings[side] * 1.2 + ( this.remaining[side] - this.kings[side])
     }
 
     /**
@@ -256,7 +258,7 @@ export default class Board {
      */
     isOpponentChecker(startingSquare, point) {
         const square = this.getSquare(point)
-        if( Player.OpposingPlayer(startingSquare.side) === square.side) {
+        if( Player.opposingPlayer(startingSquare.side) === square.side) {
             return true
         }
         return false
@@ -286,6 +288,7 @@ export default class Board {
  */
     getAllPlayerMoves(player) {
         let moves = []
+        const side = player instanceof Player ? player.side : player
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 const point = new Point(col, row)
@@ -293,11 +296,12 @@ export default class Board {
                     continue
                 }
                 const square = this.getSquare(point)
-                if (square.side !== player.side) {
+                if (square.side !== side) {
                     continue
                 }
+                const openMoves = this.getOpenMoves(point, 10)
                 // This square has a checker for this player.  Get the moves
-                moves = [...moves, ...this.getOpenMoves(point, 0)]
+                moves = [...moves, ...openMoves]
             }
         }
         return moves
@@ -485,7 +489,7 @@ export default class Board {
     display() {
         const printSeparatorRow = () => '  |-----|-----|-----|-----|-----|-----|-----|-----|\n'
         const printColNums = () => '     0     1     2     3     4     5     6     7\n' + printSeparatorRow()
-        const printRow = (idx, row) => (`${idx} |` + row.map((col, idx) => `  ${col.toString()}  |`).join('')) + '\n' + printSeparatorRow()
+        const printRow = (idx, row) => (`${idx} |` + row.map(col => `  ${col.toString()}  |`).join('')) + '\n' + printSeparatorRow()
 
         return printColNums() + this.squares.map((row, idx) => printRow(idx, row)).join('')
     }
