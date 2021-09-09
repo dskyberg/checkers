@@ -176,7 +176,7 @@ export default class Board {
      * @returns {number} The calculated vaue
      */
     calculateSide(side) {
-        return this.kings[side] * 1.2 + ( this.remaining[side] - this.kings[side])
+        return this.kings[side] * 1.2 + (this.remaining[side] - this.kings[side])
     }
 
     /**
@@ -258,7 +258,7 @@ export default class Board {
      */
     isOpponentChecker(startingSquare, point) {
         const square = this.getSquare(point)
-        if( Player.opposingPlayer(startingSquare.side) === square.side) {
+        if (Player.opposingPlayer(startingSquare.side) === square.side) {
             return true
         }
         return false
@@ -364,7 +364,7 @@ export default class Board {
      * @param {*} depth
      * @returns
      */
-    getJumpMoves(moves, startSquare, startPoint, maxDepth=10, depth = 0) {
+    getJumpMoves(moves, startSquare, startPoint, maxDepth = 10, depth = 0) {
 
         if (Board.isvalidSquare(startPoint) === false) {
             return moves
@@ -424,12 +424,20 @@ export default class Board {
      * @param {Move} move  The move to make
      */
     makeMove(move) {
+        const history = {
+            side: this.getSquare(move.start).side,
+            move,
+            becomingKing: false,
+            removed: null,
+        }
         const middle = move.findMiddle()
         // If there's a middle square, then this is a jump move.  Remove the piece
         if (middle !== null) {
             this.removeSquare(middle)
+            history.removed = middle
         }
-        this.moveSquare(move.start, move.end)
+        history.becomingKing = this.moveSquare(move.start, move.end)
+        return history
     }
 
 
@@ -473,6 +481,7 @@ export default class Board {
         if (becomingKing) {
             this.kings[startSquare.side] += 1
         }
+        return becomingKing
     }
 
     removeSquare(point) {

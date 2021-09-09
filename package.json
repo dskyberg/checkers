@@ -12,6 +12,7 @@
         "@testing-library/react": "^11.2.7",
         "@testing-library/user-event": "^12.8.3",
         "clsx": "^1.1.1",
+        "dexie": "^3.0.3",
         "mobx": "^6.3.2",
         "mobx-react-lite": "^3.2.0",
         "react": "^17.0.2",

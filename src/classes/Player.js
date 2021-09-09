@@ -102,7 +102,7 @@ export default class Player {
     {
         const alpha = Number.NEGATIVE_INFINITY
         const beta = Number.POSITIVE_INFINITY
-        const maximizingPlayer = true
+        const maximizingPlayer = false
 
         let possibleMoves = []
         if(this.skippingPoint == null) {
@@ -125,9 +125,11 @@ export default class Player {
         {
             tempBoard = board.clone();
             tempBoard.makeMove(move);
-            const heuristic = this.minimax(tempBoard, this.opposing(), !maximizingPlayer, alpha, beta)
+            const heuristic = this.minimax(tempBoard, this.side, maximizingPlayer, alpha, beta)
+            console.log('heuristic', !maximizingPlayer, heuristic)
             calculatedMoves.push({move, heuristic})
             if(heuristic >= maxHeuristic) {
+                console.log('setting maxHeuristic to', heuristic)
                 maxHeuristic = heuristic
             }
         }
