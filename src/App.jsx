@@ -7,6 +7,7 @@ import Box from "@material-ui/core/Box";
 import Header from './components/Header'
 import BoardView from './components/BoardView'
 import NewGameDialog from './components/NewGameDialog'
+import SettingsDialog from "./components/SettingsDialog";
 import SuperUserDialog from './components/SuperUserDialog'
 
 
@@ -56,6 +57,7 @@ const App = observer(function App(props) {
           </Box>
         </Container>
        <NewGameDialog onClose={handleDialogClose} />
+       <SettingsDialog />
        <SuperUserDialog />
     </React.Fragment>
   );

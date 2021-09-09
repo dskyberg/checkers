@@ -8,8 +8,10 @@ import makeStyles from '@material-ui/styles/makeStyles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
 import Box from '@material-ui/core/Box'
 import Typography from "@material-ui/core/Typography";
+import SettingsIcon from '@material-ui/icons/Settings'
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -24,11 +26,14 @@ const Header = observer(function Header() {
   const kings = settings.board.kings
 
   const handleNewGame = () => {
-    settings.setOpenDialog(true);
+    settings.setOpenNewGameDialog(true);
   };
 
+  const handleSettings = () => {
+    settings.setOpenSettingsDialog(true);
+  };
   const handleBannerClick = () => {
-    if(settings.superUser) {
+    if (settings.superUser) {
       settings.turnOver()
     }
   }
@@ -50,6 +55,9 @@ const Header = observer(function Header() {
           <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.BLACK)}</Typography>
         </Box>
         <Button color="inherit" onClick={handleNewGame}>New Game</Button>
+        <IconButton color="inherit" onClick={handleSettings}>
+          <SettingsIcon />
+        </IconButton>
       </Toolbar>
     </AppBar>
   )
