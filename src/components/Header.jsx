@@ -44,7 +44,7 @@ const Header = observer(function Header() {
         <Box className={classes.title} flexDirection="column">
           <Typography variant="subtitle2" >Remaining White: {remaining[PLayer.WHITE]}</Typography>
           <Typography variant="subtitle2">White Kings: {kings[PLayer.WHITE]}</Typography>
-          <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.WHITE)}</Typography>
+          <Typography variant="subtitle2">Value: {settings.board.calculate(Player.WHITE)}</Typography>
         </Box>
         <Typography variant="h6" className={classes.title} onClick={handleBannerClick}>
           {settings.banner}
@@ -52,7 +52,7 @@ const Header = observer(function Header() {
         <Box className={classes.title} flexDirection="column">
           <Typography variant="subtitle2">Remaining Black: {remaining[Player.BLACK]}</Typography>
           <Typography variant="subtitle2">Black Kings: {kings[Player.BLACK]}</Typography>
-          <Typography variant="subtitle2">Value: {settings.board.calculateSide(Player.BLACK)}</Typography>
+          <Typography variant="subtitle2">Value: {settings.board.calculate(Player.BLACK)}</Typography>
         </Box>
         <Button color="inherit" onClick={handleNewGame}>New Game</Button>
         <IconButton color="inherit" onClick={handleSettings}>

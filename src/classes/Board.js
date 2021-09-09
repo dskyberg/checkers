@@ -151,32 +151,190 @@ export default class Board {
     /**
      * Calculates the current value of the board for the player based on the number
      * of pieces and kings vs the opponent's number of pieces and kings
+     * Many thanks to https://github.com/dimitrijekaranfilovic/checkers for the
+     * algorithm
      *
      * @param {number} side Either Player.WHITE or Player.BLACK
-     * @returns nummber
+     * @returns nummber result
      */
     calculate(side) {
-        if (side === Player.WHITE) {
-            return this.calculateSide(Player.WHITE) - this.calculateSide(Player.BLACK)
+
+        let result = 0
+        let mine = 0
+        let opp = 0
+
+        for (const row of this.squares) {
+            for (const square of row) {
+                if (square.side === side) {
+                    mine += 1
+                    result += 5
+
+                    if (square.isKing) {
+                        result += 5
+                    }
+
+                    // Is this checker on an end row?
+                    if ([0, 7].includes(square.point.x) || [0, 7].includes(square.point.y)) {
+                        result += 7
+                    }
+
+                    // If the checker can be jumped, subtract 3
+                    result += this.calculateJumpableScore(square)
+
+                    if (square.point.y + 2 > 7 || square.point.y - 2 < 0) {
+                        continue
+                    }
+
+                    // If the square can jump, add 6
+                    result += this.calculateJumpScore(square)
+                }
+                else if (square.side === Player.opposingPlayer(side)) {
+                    opp += 1
+                }
+            }
         }
-        if (side === Player.BLACK) {
-            return this.calculateSide(Player.BLACK) - this.calculateSide(Player.WHITE)
-        }
-        // Just in case
-        console.log('Board.calculate - bad value for side:', side)
-        return 0
+        return result + (mine - opp) * 1000
     }
 
     /**
-     * 1 point for every regular piece and 1.2 points for every king.
+     *  Calculate the potential for the checker in this square to jump an
+     * opponent's piece. Add 6 for every potential jump
      *
-     * Only called by Board.calculate
-     *
-     * @param {number} side The side to calculate (either Payer.WHITE or Player.BLACk)
-     * @returns {number} The calculated vaue
+     * @param {Square} square The square to evaluate
+     * @returns {number} resulting score
      */
-    calculateSide(side) {
-        return this.kings[side] * 1.2 + (this.remaining[side] - this.kings[side])
+    calculateJumpScore(square) {
+        let result = 0
+
+        if (square.side === Player.WHITE) {
+            if (square.point.y + 2 <= 7) {
+                if (square.point.x - 2 >= 0) {
+                    const ne = this.getSquare(new Point(square.point.x - 2, square.point.y + 2))
+                    const nem = this.getSquare(new Point(square.point.x - 1, square.point.y + 1))
+                    if (nem.side === Player.BLACK && ne.side === Player.EMPTY) {
+                        result += 6
+                    }
+                }
+                if (square.point.x + 2 <= 7) {
+                    const nw = this.getSquare(new Point(square.point.x + 2, square.point.y + 2))
+                    const nwm = this.getSquare(new Point(square.point.x + 1, square.point.y + 1))
+
+                    if (nwm.side === Player.Black && nw.side === Player.Empty) {
+                        result += 6
+                    }
+                }
+            }
+
+            if (square.isKing && square.point.y - 2 >= 0) {
+                if (square.point.x - 2 >= 0) {
+                    const se = this.getSquare(new Point(square.point.x - 2, square.point.y - 2))
+                    const sem = this.getSquare(new Point(square.point.x - 1, square.point.y - 1))
+                    if (sem.side === Player.BLACK && se.side === Player.EMPTY) {
+                        result += 6
+                    }
+                }
+                if (square.point.x + 2 <= 7) {
+                    const sw = this.getSquare(new Point(square.point.x + 2, square.point.y - 2))
+                    const swm = this.getSquare(new Point(square.point.x + 1, square.point.y - 1))
+
+                    if (swm.side === Player.Black && sw.side === Player.Empty) {
+                        result += 6
+                    }
+                }
+            }
+        }
+
+        else if (square.side === Player.BLACK) {
+            if (square.point.y - 2 <= 0) {
+                if (square.point.x - 2 >= 0) {
+                    const se = this.getSquare(new Point(square.point.x - 2, square.point.y - 2))
+                    const sem = this.getSquare(new Point(square.point.x - 1, square.point.y - 1))
+                    if (sem.side === Player.WHITE && se.side === Player.EMPTY) {
+                        result += 6
+                    }
+                }
+                if (square.point.x + 2 <= 7) {
+                    const sw = this.getSquare(new Point(square.point.x + 2, square.point.y - 2))
+                    const swm = this.getSquare(new Point(square.point.x + 1, square.point.y - 1))
+
+                    if (swm.side === Player.WHITE && sw.side === Player.Empty) {
+                        result += 6
+                    }
+                }
+            }
+
+            if (square.isKing && square.point.y + 2 <= 7) {
+                if (square.point.x - 2 >= 0) {
+                    const ne = this.getSquare(new Point(square.point.x - 2, square.point.y + 2))
+                    const nem = this.getSquare(new Point(square.point.x - 1, square.point.y + 1))
+                    if (nem.side === Player.WHITE && ne.side === Player.EMPTY) {
+                        result += 6
+                    }
+                }
+                if (square.point.x + 2 <= 7) {
+                    const nw = this.getSquare(new Point(square.point.x + 2, square.point.y + 2))
+                    const nwm = this.getSquare(new Point(square.point.x + 1, square.point.y + 1))
+
+                    if (nwm.side === Player.WHITE && nw.side === Player.Empty) {
+                        result += 6
+                    }
+                }
+            }
+        }
+
+        return result
+    }
+
+    /**
+     * Calculate the potential scores if this square can be jumped by an
+     * opponent checker. Each possible jump counts -3
+     *
+     * @param {Square} square Square to evaluate
+     * @returns {number} resulting score
+     */
+    calculateJumpableScore(square) {
+
+        if ([0, 7].includes(square.point.y) || [0, 7].includes(square.point.x)) {
+            // A cell on an edge can't be jumped
+            return 0
+        }
+
+        let result = 0
+        const ne = this.getSquare(new Point(square.point.x - 1, square.point.y + 1))
+        const nw = this.getSquare(new Point(square.point.x + 1, square.point.y + 1))
+        const se = this.getSquare(new Point(square.point.x - 1, square.point.y - 1))
+        const sw = this.getSquare(new Point(square.point.x + 1, square.point.y - 1))
+
+        if (square.side === Player.WHITE) {
+            if (ne.side === Player.BLACK && sw.side === Player.EMPTY) {
+                result -= 3
+            }
+            if (nw.side === Player.BLACK && se.side === Player.EMPTY) {
+                result -= 3
+            }
+            if (se.side === Player.BLACK && se.isKing && nw.side === Player.EMPTY) {
+                result -= 3
+            }
+            if (sw.side === Player.BLACK && sw.isKing && ne.side === Player.EMPTY) {
+                result -= 3
+            }
+        }
+
+        if (square.side === Player.BLACK) {
+            if (se.side === Player.WHITE && se.side === Player.EMPTY) {
+                result -= 3
+            }
+            if (nw.side === Player.WHITE && se.side === Player.EMPTY) {
+                result -= 3
+            }
+            if (se.side === Player.WHITE && se.isKing && nw.side === Player.EMPTY) {
+                result -= 3
+            }
+            if (sw.side === Player.WHITE && sw.isKing && ne.side === Player.EMPTY) {
+                result -= 3
+            }
+        }
+        return result
     }
 
     /**
@@ -281,11 +439,11 @@ export default class Board {
     }
 
     /**
- * Get all the open moves for this player
- *
- * @param {Player} player
- * @return {Move[]}
- */
+    * Get all the open moves for this player
+    *
+    * @param {Player} player
+    * @return {Move[]}
+    */
     getAllPlayerMoves(player) {
         let moves = []
         const side = player instanceof Player ? player.side : player

@@ -190,7 +190,7 @@ export default class Player {
                 tempBoard = board.clone();
                 tempBoard.makeMove(move);
 
-                const result = this.minimax(tempBoard, Player.opposingPlayer(side), !maximizingPlayer, alpha, beta, depth + 1, maxDepth);
+                const result = this.minimax(tempBoard, side, !maximizingPlayer, alpha, beta, depth + 1, maxDepth);
 
                 initial = Math.min(result, initial);
                 alpha = Math.min(alpha, initial);
