@@ -27,19 +27,22 @@ export default class Player {
         return side === Player.EMPTY ? 0 : 3 - side
     }
 
-    static isPlayer(player) {
-        if ((player instanceof Player) && (player.side === Player.WHITE || player.side === Player.BLACK)) {
-            return true
-        }
-        return false
-    }
-
     static makeWhite() {
         return new Player(Player.WHITE)
     }
 
     static makeBlack() {
         return new Player(Player.BLACK)
+    }
+
+    static forward(player, count = 1) {
+        const side = player instanceof Player ? player.side : player
+        return side === Player.BLACK ? 0 - count : 0 + count
+    }
+
+    static backward(player, count = 1) {
+        const side = player instanceof Player ? player.side : player
+        return side === Player.WHITE ? 0 - count : 0 + count
     }
 
     /**
@@ -90,20 +93,29 @@ export default class Player {
         return 3 - this.side
     }
 
+        /**
+     * @typedef MoveHistory
+     * @type object
+     * @property {number} side
+     * @property {Move} move
+     * @property {boolean} becomingKing
+     * @property {Square} removed
+     *
+     */
+
 
     /**
      *
      * @param {Board} board
-     * @param {*} maximizingPlayer
-     * @param {number} maxDepth
-     * @returns {Move} Resulting move from the minimax algorithm
+     * @returns {MoveHistory} Resulting move from the minimax algorithm
      */
     makeAIMove(board)
     {
         const alpha = Number.NEGATIVE_INFINITY
         const beta = Number.POSITIVE_INFINITY
         const maximizingPlayer = false
-
+        /** @type {MoveHistory[]} */
+        const history = []
         let possibleMoves = []
         if(this.skippingPoint == null) {
             possibleMoves = board.getAllPlayerMoves(this);
@@ -141,7 +153,9 @@ export default class Player {
         // If there is more than 1 possible move, randomly select one
         const move = calculatedMoves.length === 1 ? calculatedMoves[0] : calculatedMoves[randomInt(calculatedMoves.length)];
         console.log('making move:',move)
-        board.makeMove(move.move)
+        history.push(board.makeMove(move.move))
+        console.log('makeAIMove returning', history)
+        return history
     }
 
 

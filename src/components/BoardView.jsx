@@ -28,7 +28,7 @@ const BoardView = observer(function BoardView() {
     const { settings } = useStore()
     // TODO: figure out why I need this in order to render after black moves
     const [result, setResult] = React.useState(null)
-    const { selected, superUser } = settings
+    const { board, selected, superUser } = settings
 
 
     const handleSquareClick = (point) => {

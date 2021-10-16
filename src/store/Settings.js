@@ -1,4 +1,4 @@
-import { action, makeObservable, observable, values } from "mobx"
+import { action, makeObservable, observable, computed, toJS } from "mobx"
 import Dexie from 'dexie';
 import Board from '../classes/Board'
 import Player from '../classes/Player'
@@ -64,6 +64,8 @@ export default class Settings {
             reset: action,
             makeMoves: action,
             makeComputerMove: action,
+            undoMoves: action,
+            hasHistory: computed,
             setSquare: action,
         })
         this.dexie.version(IDB_SCHEMA.version).stores({ settings: IDB_SCHEMA.schema });
@@ -190,18 +192,30 @@ export default class Settings {
 
     }
 
+
+    /**
+     *  Uses the collection of selected squares (from this.selected) to generate
+     * moves, including jumps.  The set of moves are captured in a pseudo
+     * transaction in the settings history.
+     * @returns {GameResult} result Resolved with the game results. Rejected if no moves.
+     */
     makeMoves() {
         return new Promise((resolve, reject) => {
             if (this.selected === undefined || this.selected === null || this.selected.length < 2) {
                 // Nothing to do
                 reject()
             }
+
+            /**@type {MoveHistory[]} */
             const history = []
+
             for (let i = 1; i < this.selected.length; i++) {
                 const move = new Move(this.selected[i - 1], this.selected[i])
+                // makeMove returns a history. Save it.
                 history.push(this.board.makeMove(move))
             }
-            this.history = [...this.history, history]
+
+            this.history.push(history)
             const result = this.board.evaluate()
             this.clearSelected()
             this.turnOver()
@@ -209,16 +223,48 @@ export default class Settings {
         })
     }
 
+
     //TODO: Figure out where to put this.  Should it be a class attribute?
     skippingPoint = null
     makeComputerMove() {
         return new Promise(async (resolve, reject) => {
             await sleep(1000)
-            this.currentPlayer.makeAIMove(this.board)
+            const history = this.currentPlayer.makeAIMove(this.board)
+            console.log('makeComputerMove received history:', history)
+            this.history.push(history)
             this.turnOver()
             resolve()
         })
     }
+
+    /**
+     *  calculated method to track whether there is any history
+     * @returns {boolean}
+     */
+     get hasHistory() {
+        return this.history.length > 0
+    }
+
+    /**
+     * Will undo the last move in the history
+     */
+    undoMoves() {
+        if(this.history.length === 0) {
+            return
+        }
+        // Undo the computer move first
+        const moves = this.history[this.history.length-1]
+        console.log('settings undoMoves:', moves)
+        for(let i = moves.length - 1; i >= 0; i--) {
+            this.board.undoMove(moves[i])
+        }
+        this.history = this.history.slice(0, -1)
+        // Now undo the player move
+
+        const result = this.board.evaluate()
+        return result
+    }
+
 
     setSquare(point, side, isKing) {
         this.board.setSquare(new Square(point, true, side, isKing))

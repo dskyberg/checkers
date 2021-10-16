@@ -92,8 +92,29 @@ export default class Square {
         return square
     }
 
-
-
+    /**
+     * Calculate the  point that is relatively forward and left of this point.
+     */
+    getNE(spaces = 1) {
+        const nx = this.point.x + spaces
+        const ny =  this.point.y + Player.forward(this.side, spaces)
+        return new Point(nx, ny)
+    }
+    getNW(spaces = 1) {
+        const nx = this.point.x - spaces
+        const ny =  this.point.y + Player.forward(this.side, spaces)
+        return new Point(nx, ny)
+    }
+    getSE(spaces = 1) {
+        const nx = this.point.x + spaces
+        const ny =  this.point.y + Player.backward(this.side, spaces)
+        return new Point(nx, ny)
+    }
+    getSW(spaces = 1) {
+        const nx = this.point.x - spaces
+        const ny =  this.point.y + Player.backward(this.side, spaces)
+        return new Point(nx, ny)
+    }
 
     equals(square) {
         if (!(square instanceof Square)) {

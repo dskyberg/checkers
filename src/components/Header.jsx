@@ -7,11 +7,12 @@ import Player from "../classes/Player";
 import makeStyles from '@material-ui/styles/makeStyles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
-import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import Box from '@material-ui/core/Box'
 import Typography from "@material-ui/core/Typography";
+import UndoIcon from '@material-ui/icons/Undo'
 import SettingsIcon from '@material-ui/icons/Settings'
+import FiberNewIcon from '@material-ui/icons/FiberNew'
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -24,6 +25,10 @@ const Header = observer(function Header() {
   const { settings } = useStore()
   const remaining = settings.board.remaining
   const kings = settings.board.kings
+
+  const handleUndo = () => {
+    settings.undoMoves()
+  }
 
   const handleNewGame = () => {
     settings.setOpenNewGameDialog(true);
@@ -54,10 +59,9 @@ const Header = observer(function Header() {
           <Typography variant="subtitle2">Black Kings: {kings[Player.BLACK]}</Typography>
           <Typography variant="subtitle2">Value: {settings.board.calculate(Player.BLACK)}</Typography>
         </Box>
-        <Button color="inherit" onClick={handleNewGame}>New Game</Button>
-        <IconButton color="inherit" onClick={handleSettings}>
-          <SettingsIcon />
-        </IconButton>
+        <IconButton color="inherit" disabled={!settings.hasHistory} onClick={handleUndo}><UndoIcon /></IconButton>
+        <IconButton color="inherit" onClick={handleNewGame}><FiberNewIcon /></IconButton>
+        <IconButton color="inherit" onClick={handleSettings}><SettingsIcon /></IconButton>
       </Toolbar>
     </AppBar>
   )

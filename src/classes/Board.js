@@ -15,6 +15,28 @@ import Square from './Square'
 import Player from './Player'
 import Move from './Move'
 
+/**
+ * @module Board
+ */
+/**
+ * @typedef GameResult
+ * @type {object}
+ * @property {number[]} moves The count of available moves per player
+ * @property {string} outcome The current state
+ *
+ */
+
+/*
+* @typedef MoveHistory
+* @type object
+* @property {number} side
+* @property {Move} move
+* @property {boolean} becomingKing
+* @property {Square} removed
+*
+*/
+
+
 const whiteRows = [0, 1, 2]
 const blackRows = [5, 6, 7]
 
@@ -41,13 +63,30 @@ export default class Board {
         return inRange(point.x, -1, MAX_ROW_COL) && inRange(point.y, -1, MAX_ROW_COL)
     }
 
+    static isValidPoint(point) {
+        if(point instanceof Point) {
+            return Point.testPoint(point)
+        }
+        return point >= 0 && point <= 7
+    }
+
     /**
-     * Test to see if the point is on rows 0 or 7
-     * @param {Point} point
+     * Test to see if the point is on rows or cols 0 or 7.  This can also be
+     * used to test if a proposed point is greater than
+     * @param {Point|number} point If a Point instance, point.y is tested. Else the point is tested.
      * @returns
      */
-    static isKingRow = (point) => point.y === 0 || point.y === 7
+    static isEdgeRow = (point) => {
+        const y = point instanceof Point ? point.y : point
+        return y <= 0 || y >= 7
+    }
 
+    static isEdgeCol = (point) => {
+        const x = point instanceof Point ? point.x : point
+        return x <= 0 || x >= 7
+    }
+
+    static isEdge = (point) => Board.isEdgeRow(point) || Board.isEdgeCol(point)
 
     constructor(board) {
         if (board instanceof Board) {
@@ -206,78 +245,42 @@ export default class Board {
     calculateJumpScore(square) {
         let result = 0
 
-        if (square.side === Player.WHITE) {
-            if (square.point.y + 2 <= 7) {
-                if (square.point.x - 2 >= 0) {
-                    const ne = this.getSquare(new Point(square.point.x - 2, square.point.y + 2))
-                    const nem = this.getSquare(new Point(square.point.x - 1, square.point.y + 1))
-                    if (nem.side === Player.BLACK && ne.side === Player.EMPTY) {
-                        result += 6
-                    }
-                }
-                if (square.point.x + 2 <= 7) {
-                    const nw = this.getSquare(new Point(square.point.x + 2, square.point.y + 2))
-                    const nwm = this.getSquare(new Point(square.point.x + 1, square.point.y + 1))
-
-                    if (nwm.side === Player.Black && nw.side === Player.Empty) {
-                        result += 6
-                    }
-                }
+        // Test if relative NorthEast is jumpable
+        const nep = square.getNE(2)
+        if(Square.isValid(nep)) {
+            const ne = this.getSquare(nep)
+            const nem = this.getSquare(square.getNE())
+            if(ne.side === Player.EMPTY && nem.side === Player.opposingPlayer(square.side)) {
+                result += 6
             }
-
-            if (square.isKing && square.point.y - 2 >= 0) {
-                if (square.point.x - 2 >= 0) {
-                    const se = this.getSquare(new Point(square.point.x - 2, square.point.y - 2))
-                    const sem = this.getSquare(new Point(square.point.x - 1, square.point.y - 1))
-                    if (sem.side === Player.BLACK && se.side === Player.EMPTY) {
-                        result += 6
-                    }
-                }
-                if (square.point.x + 2 <= 7) {
-                    const sw = this.getSquare(new Point(square.point.x + 2, square.point.y - 2))
-                    const swm = this.getSquare(new Point(square.point.x + 1, square.point.y - 1))
-
-                    if (swm.side === Player.Black && sw.side === Player.Empty) {
-                        result += 6
-                    }
-                }
+        }
+        // Test if relative NorthWest is jumpable
+        const nwp = square.getNW(2)
+        if(Square.isValid(nwp)){
+            const nw = this.getSquare(nep)
+            const nwm = this.getSquare(square.getNW())
+            if(nw.side === Player.EMPTY && nwm.side === Player.opposingPlayer(square.side)) {
+                result += 6
             }
         }
 
-        else if (square.side === Player.BLACK) {
-            if (square.point.y - 2 <= 0) {
-                if (square.point.x - 2 >= 0) {
-                    const se = this.getSquare(new Point(square.point.x - 2, square.point.y - 2))
-                    const sem = this.getSquare(new Point(square.point.x - 1, square.point.y - 1))
-                    if (sem.side === Player.WHITE && se.side === Player.EMPTY) {
-                        result += 6
-                    }
-                }
-                if (square.point.x + 2 <= 7) {
-                    const sw = this.getSquare(new Point(square.point.x + 2, square.point.y - 2))
-                    const swm = this.getSquare(new Point(square.point.x + 1, square.point.y - 1))
-
-                    if (swm.side === Player.WHITE && sw.side === Player.Empty) {
-                        result += 6
-                    }
+        if(square.isKing) {
+            // Test if relative SouthEast is jumpable
+            const sep = square.getSE(2)
+            if(Square.isValid(sep)) {
+                const se = this.getSquare(sep)
+                const sem = this.getSquare(square.getSE())
+                if(se.side === Player.EMPTY && sem.side === Player.opposingPlayer(square.side)) {
+                    result += 6
                 }
             }
-
-            if (square.isKing && square.point.y + 2 <= 7) {
-                if (square.point.x - 2 >= 0) {
-                    const ne = this.getSquare(new Point(square.point.x - 2, square.point.y + 2))
-                    const nem = this.getSquare(new Point(square.point.x - 1, square.point.y + 1))
-                    if (nem.side === Player.WHITE && ne.side === Player.EMPTY) {
-                        result += 6
-                    }
-                }
-                if (square.point.x + 2 <= 7) {
-                    const nw = this.getSquare(new Point(square.point.x + 2, square.point.y + 2))
-                    const nwm = this.getSquare(new Point(square.point.x + 1, square.point.y + 1))
-
-                    if (nwm.side === Player.WHITE && nw.side === Player.Empty) {
-                        result += 6
-                    }
+            // Test if relative SouthWest is jumpable
+            const swp = square.getSW(2)
+            if(Square.isValid(swp)){
+                const sw = this.getSquare(nep)
+                const swm = this.getSquare(square.getSW())
+                if(sw.side === Player.EMPTY && swm.side === Player.opposingPlayer(square.side)) {
+                    result += 6
                 }
             }
         }
@@ -293,57 +296,33 @@ export default class Board {
      * @returns {number} resulting score
      */
     calculateJumpableScore(square) {
-
-        if ([0, 7].includes(square.point.y) || [0, 7].includes(square.point.x)) {
+        if (Board.isEdge(square.point)) {
             // A cell on an edge can't be jumped
             return 0
         }
 
         let result = 0
-        const ne = this.getSquare(new Point(square.point.x - 1, square.point.y + 1))
-        const nw = this.getSquare(new Point(square.point.x + 1, square.point.y + 1))
-        const se = this.getSquare(new Point(square.point.x - 1, square.point.y - 1))
-        const sw = this.getSquare(new Point(square.point.x + 1, square.point.y - 1))
+        const ne = this.getSquare(square.getNE())
+        const nw = this.getSquare(square.getNW())
+        const se = this.getSquare(square.getSE())
+        const sw = this.getSquare(square.getSW())
 
-        if (square.side === Player.WHITE) {
-            if (ne.side === Player.BLACK && sw.side === Player.EMPTY) {
-                result -= 3
-            }
-            if (nw.side === Player.BLACK && se.side === Player.EMPTY) {
-                result -= 3
-            }
-            if (se.side === Player.BLACK && se.isKing && nw.side === Player.EMPTY) {
-                result -= 3
-            }
-            if (sw.side === Player.BLACK && sw.isKing && ne.side === Player.EMPTY) {
-                result -= 3
-            }
+        const opp = Player.opposingPlayer(square.side)
+        if (ne.side === opp && sw.side === Player.EMPTY) {
+            result -= 3
+        }
+        if (nw.side === opp && se.side === Player.EMPTY) {
+            result -= 3
+        }
+        if (se.side === opp && se.isKing && nw.side === Player.EMPTY) {
+            result -= 3
+        }
+        if (sw.side === opp && sw.isKing && ne.side === Player.EMPTY) {
+            result -= 3
         }
 
-        if (square.side === Player.BLACK) {
-            if (se.side === Player.WHITE && se.side === Player.EMPTY) {
-                result -= 3
-            }
-            if (nw.side === Player.WHITE && se.side === Player.EMPTY) {
-                result -= 3
-            }
-            if (se.side === Player.WHITE && se.isKing && nw.side === Player.EMPTY) {
-                result -= 3
-            }
-            if (sw.side === Player.WHITE && sw.isKing && ne.side === Player.EMPTY) {
-                result -= 3
-            }
-        }
         return result
     }
-
-    /**
-     * @typedef GameResult
-     * @type {object}
-     * @property {number[]} moves The count of available moves per player
-     * @property {string} outcome The current state
-     *
-     */
 
     /**
      * Determine the game state.  Is it at a win, loss, draw yet? This should be
@@ -580,6 +559,7 @@ export default class Board {
      * is also removed.
      *
      * @param {Move} move  The move to make
+     * @returns {MoveHistory}
      */
     makeMove(move) {
         const history = {
@@ -591,13 +571,22 @@ export default class Board {
         const middle = move.findMiddle()
         // If there's a middle square, then this is a jump move.  Remove the piece
         if (middle !== null) {
+            history.removed = this.getSquare(middle)
             this.removeSquare(middle)
-            history.removed = middle
         }
         history.becomingKing = this.moveSquare(move.start, move.end)
         return history
     }
 
+    undoMove(history) {
+        const move = history.move
+        // Put the check back
+        console.log('putting the piece back')
+        this.moveSquare(move.end, move.start)
+        if (history.removed !== null) {
+            this.setSquare(history.removed)
+        }
+    }
 
     /***
      * Get the square by row, col.  The row and col must be valid.
@@ -630,7 +619,7 @@ export default class Board {
         const startSquare = this.getSquare(startPoint)
 
         // Grab some info about whether or not this piece is becoming a king
-        const becomingKing = !startSquare.isKing && Board.isKingRow(endPoint)
+        const becomingKing = !startSquare.isKing && Board.isEdgeRow(endPoint)
         const isKing = becomingKing ? true : startSquare.isKing
 
         this.squares[endPoint.y][endPoint.x] = startSquare.move(endPoint, isKing)
