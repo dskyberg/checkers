@@ -1,4 +1,3 @@
-
 # Javascript Checkers
 A minimax checkers app using react, @material-ui, and mobx
 Thanks to [hanli1](https://github.com/hanli1/minimax-checkers) and [dimitrijekaranfilvic](https://github.com/dimitrijekaranfilovic/checkers), whose code I studied and copied.
